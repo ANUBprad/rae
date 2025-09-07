@@ -1,3 +1,5 @@
+  // Fetch messages when currentConvoId changes (except -1)
+  
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -256,50 +258,11 @@ export default function ChatWindow() {
   };
   return (
     <div className="w-full h-[calc(100vh-36px)] flex bg-background">
-      {/* Sidebar - Chat history */}
-      <div className="w-fit shrink-0 h-full flex flex-col py-[2px] border-r border-border bg-background">
-        <div className="flex-1 overflow-y-auto ">
-          {convoHistory.length === 0 ? (
-            <div className="text-gray-500 text-sm text-center mt-8 px-2">
-              <p className="mb-2">No conversations yet</p>
-              <p className="text-xs text-gray-400">
-                Start a new chat to see your history here
-              </p>
-            </div>
-          ) : (
-            convoHistory.map((convo, idx) => (
-              <ChatSidebarButton
-                key={convo.id !== undefined ? convo.id : `temp-${idx}`}
-                icon={<MessageCircle size={16} />}
-                active={currentConvoId === convo.id}
-                onClick={() => convoChange(convo.id)}
-              >
-                {convo.title || "New Chat"}
-              </ChatSidebarButton>
-            ))
-          )}
-          <ChatSidebarButton
-            icon={<Plus size={16} />}
-            active={false}
-            onClick={handleNewChat}
-          >
-            New Chat
-          </ChatSidebarButton>
-        </div>
-        <div className=""></div>
-
-        {convoTitleLoading && (
-          <div className="flex justify-center py-2">
-            <Loader2 className="animate-spin text-zinc-600" size={18} />
-          </div>
-        )}
-      </div>
-
-      {/* Chat Area */}
+      {/* Chat Area only, sidebar removed */}
       <div className="flex flex-col w-full">
         <motion.div
           ref={chatContainerRef}
-          className="flex-1 flex flex-col overflow-y-auto  border-border relative min-h-0"
+          className="flex-1 flex flex-col overflow-y-auto border-border relative min-h-0"
         >
           <div className="flex-1 flex flex-col overflow-y-auto p-2 space-y-1 scrollbar-hide">
             {loadingMessages && (
