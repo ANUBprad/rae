@@ -257,7 +257,7 @@ export default function ChatWindow() {
     return;
   };
   return (
-    <div className="w-full h-[calc(100vh-36px)] flex bg-background">
+    <div className="w-full h-[calc(100vh-36px)] flex ">
       {/* Chat Area only, sidebar removed */}
       <div className="flex flex-col w-full">
         <motion.div

@@ -53,7 +53,7 @@ const DISABLE_PIN_ON_SHOW = { current: false };
  * Helper functions for notch styling and layout
  */
 const getNotchClasses = (isNotch: boolean, showGradient: boolean) => {
-  const baseClasses = "flex flex-col overflow-hidden min-h-0";
+  const baseClasses = "flex flex-col  min-h-0";
 
   if (!isNotch) return `${baseClasses} text-foreground`;
 
@@ -654,6 +654,7 @@ const Overlay = () => {
       } justify-center ${isNotch ? "pt-2" : "p-2"} box-border`}
     >
       <motion.main
+      
         animate={
           isNotch
             ? {
@@ -674,7 +675,7 @@ const Overlay = () => {
           duration: animations.overlayExpand,
           ease: "circOut",
         }}
-        className={getNotchClasses(isNotch, showGradient)}
+        className={`${getNotchClasses(isNotch, showGradient)}`}
         style={getNotchStyle(isNotch)}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -702,10 +703,10 @@ const Overlay = () => {
             opacity: { duration: 0.2, ease: "easeOut" },
             y: { duration: 0.3, ease: "easeOut" },
           }}
-          className={`flex items-center z-[100000] bg-background w-full h-[44px] shrink-0 ${
+          className={`flex items-center z-[100000] dark:bg-[#010101]  w-full h-[44px] shrink-0 ${
             !isPinned ? "drag" : ""
           } ${isNotch ? "pointer-events-none" : ""}`}
-          style={{ borderBottomLeftRadius: "12px", borderBottomRightRadius: "12px" }}
+          style={{  borderRadius: "12px" }}
         >
           <OverlayButton
             className="!border-none hover:!bg-foreground/5 !aspect-auto !w-[40px] !rounded-l-[12px] hover:!rounded-l-[12px]"
@@ -780,7 +781,7 @@ const Overlay = () => {
                 <div
                   className={`flex w-full h-full items-center border-l border-border px-4 py-2 ${
                     !isPinned ? "drag" : ""
-                  } bg-background max-w-xs`}
+                  } dark:bg-[#010101] max-w-xs`}
                 >
                   <input
                     autoFocus
@@ -799,7 +800,7 @@ const Overlay = () => {
                 <div
                   className={`flex w-full h-full items-center border-l border-border px-4 py-2 ${
                     !isPinned ? "drag" : ""
-                  } bg-background max-w-xs cursor-text`}
+                  } dark:bg-[#010101] max-w-xs cursor-text`}
                   onClick={() => {
                     setInputActive(true);
                     if (isNotch) setIsNotch(false);

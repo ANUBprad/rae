@@ -42,7 +42,7 @@ export default function Landing() {
     <>
       {showSplash && <SplashScreen onFadeOut={() => setShowSplash(false)} />}
       <div
-        className="h-full flex w-full flex-col items-center justify-center overflow-hidden text-foreground bg-background"
+        className="h-full flex w-full flex-col items-center justify-center overflow-hidden text-foreground "
       >
         <div className="bg-background w-full flex flex-col items-center justify-center flex-grow p-8">
           <motion.div

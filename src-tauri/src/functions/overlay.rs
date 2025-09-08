@@ -249,7 +249,7 @@ impl NotchWatcher {
                     && y < notch_y + NOTCH_HEIGHT
                 {
                     let _ = window.set_ignore_cursor_events(false);
-                    apply_acrylic(&window, Some((18, 18, 18, 125)));
+                    // apply_acrylic(&window, Some((18, 18, 18, 125)));
                     // println!("Mouse hovered over notch");
                     let _ = window.emit("notch-hover", ());
                 }

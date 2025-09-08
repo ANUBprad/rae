@@ -165,7 +165,7 @@ const Sidebar = () => {
           New chat
         </SidebarButton>
         <div className="flex overflow-hidden relative">
-          <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-background to-transparent h-[40px] z-30" ></div>
+          {/* <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-background/50 to-transparent h-[40px] z-30" ></div> */}
           <motion.div animate={{opacity: expanded ? 1 : 0}} className="flex flex-col gap-2 overflow-y-auto overflow-x-hidden relative">
           
           {Array.isArray(convoHistory) &&
@@ -225,7 +225,7 @@ const Sidebar = () => {
         </SidebarButton>
       </div>
       <motion.div
-        animate={{ height: expanded ? "80px" : "60px" }}
+        animate={{ height: expanded ? "70px" : "60px" }}
         className="w-full p-2"
       >
         <div className="rounded-lg overflow-hidden w-full h-full p-2 flex  dark:bg-zinc-900/50 dark:text-white gap-2">

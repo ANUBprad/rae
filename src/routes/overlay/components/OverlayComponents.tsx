@@ -19,17 +19,19 @@ export const OverlayButton = ({
   customBgColor = "",
   draggable = true,
 }: OverlayButtonProps) => (
-  <button
-    onClick={onClick}
+  <div onClick={onClick} className="h-full group aspect-square shrink-0 p-1">
+    <button
+    
     className={`${
       draggable ? "drag" : ""
-    } h-full bg-transparent hover:bg-foreground/10 flex items-center justify-center aspect-square shrink-0 border-l border-border transition-all duration-150 first:rounded-l-[12px] last:rounded-r-[12px]  ${
-      active ? `bg-foreground/20  text-surface rounded-lg` : ""
+    } h-full bg-transparent group-hover:dark:bg-zinc-900 group-hover:dark:text-white dark:text-zinc-400  flex items-center justify-center aspect-square shrink-0 rounded-lg transition-all duration-150   ${
+      active ? `bg-foreground/20  text-surface ` : ""
     } ${className}`}
     title={title}
   >
     {children}
   </button>
+  </div>
 );
 
 // Example usage (replace with your logic):

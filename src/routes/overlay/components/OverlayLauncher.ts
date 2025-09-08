@@ -2,6 +2,7 @@
 // import { Window } from "@tauri-apps/api/window";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { LogicalSize } from "@tauri-apps/api/dpi";
+import { Effect } from "@tauri-apps/api/window";
 // Creates (or reuses) the magic dot window and ensures it is visible and focused.
 // Emits `collapse_to_dot` so the UI starts in the small dot state.
 export const LaunchOverlayWindow = async () => {
@@ -38,6 +39,7 @@ export const LaunchOverlayWindow = async () => {
       shadow: false,
       fullscreen: false,
       maximizable: false,
+    
     });
 
     // Set up event listeners
