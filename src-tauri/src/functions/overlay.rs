@@ -155,7 +155,8 @@ pub fn center_overlay_bar(app: AppHandle) {
         // Emit events to unpin and disable notch mode first
         let _ = window.emit("disable_pin_on_show", ());
         let _ = window.emit("disable_notch_on_show", ());
-        println!("center_overlay_bar: Emitted disable events");
+        let _ = window.emit("center_overlay_bar", ());
+        println!("center_overlay_bar: Emitted disable events and center notification");
 
         // Show the window if it's hidden
         let _ = window.show();
@@ -193,9 +194,8 @@ pub fn center_overlay_bar(app: AppHandle) {
             println!("center_overlay_bar: Failed to get monitor/size/position");
         }
 
-        // Start the notch watcher to handle future interactions
-        NotchWatcher::start(window.clone());
-        println!("center_overlay_bar: Completed centering process");
+        // Don't start notch watcher when centering - we want bar mode, not notch mode
+        println!("center_overlay_bar: Completed centering process (bar mode)");
     } else {
         println!("center_overlay_bar: Could not find overlay window");
     }

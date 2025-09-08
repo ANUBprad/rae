@@ -49,6 +49,7 @@ const DEV_MAGIC_DOT_ENABLED = true;
 // Refs for global state
 const DISABLE_NOTCH_ON_SHOW = { current: false };
 const DISABLE_PIN_ON_SHOW = { current: false };
+const DISABLE_SAFETY_NOTCH = { current: false };
 
 /**
  * Helper functions for notch styling and layout
@@ -292,7 +293,7 @@ const Overlay = () => {
         "Safety: Setting fallback notch timeout (10s) due to disabled flag"
       );
       setTimeout(() => {
-        if (isPinned && !showChat && !inputActive) {
+        if (isPinned && !showChat && !inputActive && !DISABLE_SAFETY_NOTCH.current) {
           console.log("Safety: Attempting to enable notch");
           DISABLE_NOTCH_ON_SHOW.current = false; // Reset the flag
           invoke("enable_notch")
@@ -304,6 +305,8 @@ const Overlay = () => {
             .catch((error) => {
               console.error("Safety: Failed to enable notch:", error);
             });
+        } else if (DISABLE_SAFETY_NOTCH.current) {
+          console.log("Safety: Skipping notch enable - safety flag is active (recent center operation)");
         }
       }, 10000); // 10 second fallback
     }
@@ -373,7 +376,19 @@ const Overlay = () => {
 
       listen("toggle_pin_state", () => {
         console.log("OverlayCard: Received toggle_pin_state event");
+        // Reset notch disable flag when using Ctrl+P to ensure proper 2s timeout
+        DISABLE_NOTCH_ON_SHOW.current = false;
+        console.log("Ctrl+P: Reset notch disable flag for proper 2s timeout");
         handlePinClick();
+      }),
+
+      listen("center_overlay_bar", () => {
+        console.log("OverlayCard: Received center_overlay_bar event");
+        DISABLE_SAFETY_NOTCH.current = true;
+        // Reset after a reasonable time (30 seconds)
+        setTimeout(() => {
+          DISABLE_SAFETY_NOTCH.current = false;
+        }, 30000);
       })
     ];
 
@@ -500,8 +515,10 @@ const Overlay = () => {
     setIsPinned((prev) => {
       if (prev == false) {
         pinMagicDot();
-        // Reset the disable pin flag when user manually pins
+        // Reset both disable flags when user manually pins
         DISABLE_PIN_ON_SHOW.current = false;
+        DISABLE_NOTCH_ON_SHOW.current = false;
+        console.log("Pin: Reset notch disable flag for proper timing");
       }
       const newPinned = !prev;
       if (!newPinned) {
