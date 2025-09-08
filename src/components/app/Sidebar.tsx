@@ -157,7 +157,7 @@ const Sidebar = () => {
               transition={{ duration: 0.2, ease: "easeInOut", type: "tween" }}
               className=""
             >
-              <PencilIcon className="" />
+              <PencilIcon  className="" />
             </motion.div>
           }
           expanded={expanded}
@@ -216,7 +216,7 @@ const Sidebar = () => {
               transition={{ duration: 0.2, ease: "easeInOut", type: "tween" }}
               className=""
             >
-              <GearSixIcon className="" />
+              <GearSixIcon  className="" />
             </motion.div>
           }
           expanded={expanded}
@@ -230,11 +230,11 @@ const Sidebar = () => {
       </div>
       <motion.div
         animate={{ height: expanded ? "70px" : "60px" }}
-        className="w-full px-2 mb-2 pt-1"
+        className="w-full p-2"
       >
         <div className="rounded-lg overflow-hidden w-full h-full p-2 flex  dark:bg-zinc-800/20 dark:text-white gap-2">
           <div className="h-full aspect-square shrink-0 rounded-full bg-surface"></div>
-          <motion.div animate={{ opacity: expanded ? 1 : 0 }} className=" flex flex-col h-[70px]">
+          <motion.div animate={{ opacity: expanded ? 1 : 0 }} className=" flex flex-col ">
             <div className="text-sm font-medium dark:text-zinc-200 ">
               {name}
             </div>
