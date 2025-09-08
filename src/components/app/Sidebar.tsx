@@ -102,6 +102,9 @@ const Sidebar = () => {
   };
   const { name, email } = useUserStore();
   const [expanded, setExpanded] = useState(true);
+  useEffect(() => {
+    console.log("Current convo ID:", currentConvoId);
+  }, [currentConvoId])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -176,7 +179,7 @@ const Sidebar = () => {
             convoHistory.map((convo) => (
               <div
                 key={convo.id}
-                className={`dark:bg-zinc-900/0 ${currentConvoId == convo.id ? "dark:bg-zinc-800" : ""} h-[32px] items-center shrink-0 whitespace-nowrap px-4 rounded-lg overflow-hidden dark:text-zinc-400 hover:dark:bg-zinc-800 transition-colors duration-100 cursor-pointer text-sm font-medium py-2`}
+                className={`dark:bg-zinc-900/0 ${currentConvoId == convo.id ? "dark:!bg-zinc-800 dark:!text-zinc-200" : ""} h-[32px] items-center shrink-0 whitespace-nowrap px-4 rounded-lg overflow-hidden dark:text-zinc-400 hover:dark:bg-zinc-800 transition-colors duration-100 cursor-pointer text-sm font-medium py-2`}
                 onClick={() => {
                   console.log("Selected chat:", convo.title);
                   console.log("Chat messages:", convo);

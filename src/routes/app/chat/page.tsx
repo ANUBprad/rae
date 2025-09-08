@@ -352,92 +352,39 @@ export default function ChatWindow() {
             ))}
 
             {/* AI Thinking Animation - Simple Pulsing Dot */}
-            {isAIThinking && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.2 }}
-                className="self-start flex items-center justify-center"
-              >
-                <img
-                  src={animatedUnscreenGif}
-                  alt="AI thinking animation"
-                  className="w-10 h-10 object-cover"
-                />
-              </motion.div>
-            )}
-
-            <div ref={bottomRef} />
-          </div>
-          <Chat name={name} />
-          {/* Input area with overlay icons */}
-          <div className="relative">
-            {/* Typing Icons - appear when user is typing */}
-            <AnimatePresence>
-              {isTyping && currentInputMessage.trim() && (
+            <AnimatePresence mode="popLayout">
+              {isAIThinking && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
+                  className="flex gap-2 dark:text-zinc-200 animate-pulse font-medium items-center text-sm h-fit"
+                  initial={{ opacity: 0}}
+                  animate={{ opacity: 1 }}
+                  
                   transition={{ duration: 0.2 }}
-                  className="absolute bottom-full right-4 mb-2 flex gap-2 z-10"
                 >
-                  {/* Web Search Icon */}
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setSelectedTool(selectedTool === 1 ? 0 : 1)}
-                    className={`rounded-full p-2 shadow-md transition-all duration-200 flex items-center justify-center ${
-                      selectedTool === 1
-                        ? "bg-blue-600 ring-2 ring-blue-400/50 shadow-blue-500/30"
-                        : "bg-blue-500/90 hover:bg-blue-600 hover:shadow-blue-500/20"
-                    } text-white backdrop-blur-sm border border-white/20`}
-                    title={
-                      selectedTool === 1
-                        ? "Web search active - click to deactivate"
-                        : "Activate web search"
-                    }
-                  >
-                    <Globe size={16} />
-                  </motion.button>
-
-                  {/* Supermemory Icon */}
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setSelectedTool(selectedTool === 2 ? 0 : 2)}
-                    className={`rounded-full p-2 shadow-md transition-all duration-200 flex items-center justify-center ${
-                      selectedTool === 2
-                        ? "bg-purple-600 ring-2 ring-purple-400/50 shadow-purple-500/30"
-                        : "bg-purple-500/90 hover:bg-purple-600 hover:shadow-purple-500/20"
-                    } text-white backdrop-blur-sm border border-white/20`}
-                    title={
-                      selectedTool === 2
-                        ? "Supermemory active - click to deactivate"
-                        : "Activate supermemory"
-                    }
-                  >
-                    <Brain size={16} />
-                  </motion.button>
+                  
+                  <motion.div className="self-start flex items-center relative border-3 border-surface  rounded-full size-[20px] justify-center"></motion.div>
+                  Rae is thinking...
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* <ChatInput
-              onSend={handleSend}
-              onWebSearch={handleWebSearch}
-              onSupermemory={handleSupermemory}
-              currentModel={currentModel}
-              setCurrentModel={setCurrentModel}
-              models={MODELS}
-              initialMessage={initialMessage}
-              onTypingChange={handleTypingChange}
-              onMessageChange={setCurrentInputMessage}
-              selectedTool={selectedTool}
-              onToolChange={setSelectedTool}
-            /> */}
+            <div ref={bottomRef} />
           </div>
+          <Chat
+            name={name}
+            onSend={handleSend}
+            onWebSearch={handleWebSearch}
+            onSupermemory={handleSupermemory}
+            currentModel={currentModel}
+            setCurrentModel={setCurrentModel}
+            models={MODELS}
+            initialMessage={initialMessage}
+            onTypingChange={handleTypingChange}
+            onMessageChange={setCurrentInputMessage}
+            selectedTool={selectedTool}
+            onToolChange={setSelectedTool}
+          />
+          {/* Input area with overlay icons */}
         </motion.div>
       </div>
     </div>
