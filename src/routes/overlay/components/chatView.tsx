@@ -699,32 +699,32 @@ export const ChatView = ({
               >
                 {/* Web Search Icon */}
                 <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedTool(selectedTool === 1 ? 0 : 1)}
-                  className={`rounded-full p-2 shadow-md transition-all duration-200 flex items-center justify-center ${
+                  className={`rounded-full p-1.5 shadow-sm transition-all duration-200 flex items-center justify-center ${
                     selectedTool === 1
-                      ? "bg-blue-600 ring-2 ring-blue-400/50 shadow-blue-500/30"
-                      : "bg-blue-500/90 hover:bg-blue-600 hover:shadow-blue-500/20"
-                  } text-white backdrop-blur-sm border border-white/20`}
+                      ? "bg-gray-600/80 ring-2 ring-gray-400/30 shadow-gray-500/20"
+                      : "bg-gray-500/60 hover:bg-gray-600/70 hover:shadow-gray-500/15"
+                  } text-white backdrop-blur-sm border border-white/10`}
                   title={selectedTool === 1 ? "Web search active - click to deactivate" : "Activate web search"}
                 >
-                  <Globe size={16} />
+                  <Globe size={14} />
                 </motion.button>
 
                 {/* Supermemory Icon */}
                 <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedTool(selectedTool === 2 ? 0 : 2)}
-                  className={`rounded-full p-2 shadow-md transition-all duration-200 flex items-center justify-center ${
+                  className={`rounded-full p-1.5 shadow-sm transition-all duration-200 flex items-center justify-center ${
                     selectedTool === 2
-                      ? "bg-purple-600 ring-2 ring-purple-400/50 shadow-purple-500/30"
-                      : "bg-purple-500/90 hover:bg-purple-600 hover:shadow-purple-500/20"
-                  } text-white backdrop-blur-sm border border-white/20`}
+                      ? "bg-gray-600/80 ring-2 ring-gray-400/30 shadow-gray-500/20"
+                      : "bg-gray-500/60 hover:bg-gray-600/70 hover:shadow-gray-500/15"
+                  } text-white backdrop-blur-sm border border-white/10`}
                   title={selectedTool === 2 ? "Supermemory active - click to deactivate" : "Activate supermemory"}
                 >
-                  <Brain size={16} />
+                  <Brain size={14} />
                 </motion.button>
               </motion.div>
             )}
