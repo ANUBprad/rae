@@ -48,6 +48,7 @@ interface ChatViewProps {
   expandedChat?: boolean;
   setExpandedChat?: (expanded: boolean) => void;
   windowScreenshot?: string;
+  isActive: boolean;
 }
 
 // Utility function for smooth window resizing with easing
@@ -103,8 +104,9 @@ export const ChatView = ({
   smoothResize,
   windowName,
   windowIcon,
-  
+
   windowScreenshot,
+  isActive,
 }: ChatViewProps) => {
   const { email } = useUserStore();
   const {
@@ -155,7 +157,7 @@ export const ChatView = ({
 
     const newMessages = [
       ...messages,
-      { sender: "user" as const, text: userMsg, image: attachedImage || windowScreenshot || "" },
+      { sender: "user" as const, text: userMsg, image: attachedImage || (isActive ? windowScreenshot : "") || "" },
     ];
     setMessages(newMessages);
     if (overlayConvoId === -1) setTitleLoading(true);
@@ -165,13 +167,13 @@ export const ChatView = ({
 
     console.log("Sending:", messages, "overlay convo id :", overlayConvoId);
 
-    // Use manual image if provided, otherwise use window screenshot
-    const imageToSend = manualImage || windowScreenshot || "";
+    // Use manual image if provided, otherwise use window screenshot (only if toggle is active)
+    const imageToSend = manualImage || (isActive ? windowScreenshot : "") || "";
     console.log(
       "Image to send:",
       imageToSend.length || 0,
       "characters",
-      manualImage ? "(manual)" : "(window screenshot)",
+      manualImage ? "(manual)" : isActive ? "(window screenshot)" : "(screenshot disabled)",
     );
 
     try {
@@ -349,15 +351,15 @@ export const ChatView = ({
 
     const newMessages = [
       ...messages,
-      { sender: "user" as const, text: userMsg, image: attachedImage || windowScreenshot || "" }, // Normal message without prefix
+      { sender: "user" as const, text: userMsg, image: attachedImage || (isActive ? windowScreenshot : "") || "" }, // Normal message without prefix
     ];
     setMessages(newMessages);
     if (overlayConvoId === -1) setTitleLoading(true);
 
     setIsAIThinking(true);
 
-    // Use manual image if provided, otherwise use window screenshot
-    const imageToSend = manualImage || windowScreenshot || "";
+    // Use manual image if provided, otherwise use window screenshot (only if toggle is active)
+    const imageToSend = manualImage || (isActive ? windowScreenshot : "") || "";
 
     try {
       const ai_res = await GenerateWithWebSearch({
@@ -412,15 +414,15 @@ export const ChatView = ({
 
     const newMessages = [
       ...messages,
-      { sender: "user" as const, text: userMsg, image: attachedImage || windowScreenshot || "" }, // Normal message without prefix
+      { sender: "user" as const, text: userMsg, image: attachedImage || (isActive ? windowScreenshot : "") || "" }, // Normal message without prefix
     ];
     setMessages(newMessages);
     if (overlayConvoId === -1) setTitleLoading(true);
 
     setIsAIThinking(true);
 
-    // Use manual image if provided, otherwise use window screenshot
-    const imageToSend = manualImage || windowScreenshot || "";
+    // Use manual image if provided, otherwise use window screenshot (only if toggle is active)
+    const imageToSend = manualImage || (isActive ? windowScreenshot : "") || "";
 
     try {
       const ai_res = await GenerateWithSupermemory({

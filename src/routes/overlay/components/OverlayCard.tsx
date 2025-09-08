@@ -1034,7 +1034,7 @@ const Overlay = () => {
           {chatOpen && (
             <ChatView
               setChatOpen={setChatOpen}
-              
+
               onClose={handleCloseChatClick}
               initialMessage={initialChatMessage}
               smoothResize={smoothResize}
@@ -1042,8 +1042,9 @@ const Overlay = () => {
               setShowChat={setShowChat}
               windowName={windowName}
               windowIcon={windowIcon}
-              
+
               windowScreenshot={windowScreenshot}
+              isActive={isActive}
             />
           )}
         </AnimatePresence>
