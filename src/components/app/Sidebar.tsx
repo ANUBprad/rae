@@ -163,7 +163,7 @@ const Sidebar = () => {
           expanded={expanded}
           onClick={() => {
             // setExpanded(false)
-            navigate("/app/landing");
+            navigate("/app/chat");
           }}
         >
           New chat

@@ -1,5 +1,5 @@
-  // Fetch messages when currentConvoId changes (except -1)
-  
+// Fetch messages when currentConvoId changes (except -1)
+
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,6 +22,7 @@ import CodeBlock from "@/components/misc/CodeBlock";
 import ChatInput from "./components/ChatInput";
 import { useNoteStore } from "@/store/noteStore";
 import { GetNotes } from "@/api/notes";
+import Chat from "./components/Chat";
 const MODELS = [
   { label: "OpenAi", value: "gpt-4o-mini" },
   { label: "OpenAi", value: "gpt-4o" },
@@ -107,16 +108,16 @@ export default function ChatWindow() {
           imageToSend = (await invoke("capture_window_screenshot")) as string;
           console.log(
             "Screenshot captured for normal chat, length:",
-            imageToSend.length,
+            imageToSend.length
           );
           console.log(
             "Normal chat screenshot starts with:",
-            imageToSend.substring(0, 50),
+            imageToSend.substring(0, 50)
           );
         } catch (screenshotError) {
           console.error(
             "Failed to capture screenshot for normal chat:",
-            screenshotError,
+            screenshotError
           );
           // Continue without screenshot if capture fails
         }
@@ -256,6 +257,8 @@ export default function ChatWindow() {
     // The actual logic is in handleSend function above
     return;
   };
+
+  const { name } = useUserStore();
   return (
     <div className="w-full h-[calc(100vh-36px)]  bg-background flex ">
       {/* Chat Area only, sidebar removed */}
@@ -271,7 +274,7 @@ export default function ChatWindow() {
               </div>
             )}
 
-            {messages.length === 0 && !loadingMessages && (
+            {/* {messages.length === 0 && !loadingMessages && (
               <div className="flex-1 flex items-center justify-center text-zinc-500">
                 <div className="text-center">
                   <p className="text-lg mb-2">Start a conversation</p>
@@ -280,7 +283,7 @@ export default function ChatWindow() {
                   </p>
                 </div>
               </div>
-            )}
+            )} */}
 
             {messages.map((msg, idx) => (
               <div
@@ -367,7 +370,7 @@ export default function ChatWindow() {
 
             <div ref={bottomRef} />
           </div>
-
+          <Chat name={name} />
           {/* Input area with overlay icons */}
           <div className="relative">
             {/* Typing Icons - appear when user is typing */}
@@ -421,7 +424,7 @@ export default function ChatWindow() {
               )}
             </AnimatePresence>
 
-            <ChatInput
+            {/* <ChatInput
               onSend={handleSend}
               onWebSearch={handleWebSearch}
               onSupermemory={handleSupermemory}
@@ -433,7 +436,7 @@ export default function ChatWindow() {
               onMessageChange={setCurrentInputMessage}
               selectedTool={selectedTool}
               onToolChange={setSelectedTool}
-            />
+            /> */}
           </div>
         </motion.div>
       </div>
