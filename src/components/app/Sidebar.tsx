@@ -27,10 +27,10 @@ import { ReactNode, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useChatStore } from "@/store/chatStore";
 
-const SidebarButton = ({
+export const SidebarButton = ({
   children,
   onClick,
-  expanded = false,
+  expanded = true,
   active = false,
   logo,
 }: {
@@ -43,13 +43,17 @@ const SidebarButton = ({
   return (
     <motion.button
       whileHover={"hover"}
+      initial={{
+        paddingInline: expanded ? "0px" : "0px",
+        fontSize: expanded ? "14px" : "14px",
+      }}
       animate={{
         paddingInline: expanded ? "0px" : "0px",
         fontSize: expanded ? "14px" : "14px",
         // paddingBlock: expanded ? "20px" : "0px",
       }}
       onClick={onClick}
-      className={`w-full shrink-0 group h-[44px]  flex items-center overflow-hidden rounded-lg dark:bg-zinc-900/50 cursor-pointer dark:hover:text-white ${
+      className={`w-full shrink-0 group h-[44px]  flex items-center overflow-hidden rounded-lg dark:bg-zinc-800/20 cursor-pointer dark:hover:text-white ${
         active && "dark:!bg-zinc-800 dark:!text-white"
       } dark:hover:bg-zinc-800 transition-colors flex-nowrap whitespace-nowrap dark:text-zinc-400 font-medium duration-100`}
     >
@@ -61,7 +65,7 @@ const SidebarButton = ({
       >
         {logo}
       </motion.div>
-      <motion.div animate={{ opacity: !expanded == true ? 0 : 1 }}>
+      <motion.div className="min-w-fit w-full pr-4 text-left" animate={{ opacity: !expanded == true ? 0 : 1 }}>
         {children}
       </motion.div>
     </motion.button>
@@ -117,7 +121,7 @@ const Sidebar = () => {
       transition={{ ease: "circInOut", duration: 0.3 }}
       className="border-r border-border text-foreground overflow-hidden bg-background py-[2px] shrink-0 h-full flex flex-col overflow-y-auto"
     >
-      <div className="w-full h-[60px] flex p-2 justify-end overflow-hidden items-center">
+      <div className="w-full shrink-0 h-[60px] flex p-2 justify-end overflow-hidden items-center">
         <motion.div
           animate={{ opacity: expanded ? 1 : 0 }}
           className=" px-4  font-mono text-sm dark:text-zinc-700 font-black whitespace-nowrap pointer-events-none text-left w-full"
@@ -140,7 +144,7 @@ const Sidebar = () => {
         </button>
       </div>
       {/* Chat history section - empty clickable divs */}
-      <div className="flex flex-col gap-2 px-2 overflow-hidden">
+      <div className="flex flex-col gap-1 px-2 mb-2 overflow-hidden">
         <SidebarButton
           active={location.pathname == "/app/settings"}
           logo={
@@ -166,7 +170,7 @@ const Sidebar = () => {
         </SidebarButton>
         <div className="flex overflow-hidden relative">
           {/* <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-background/50 to-transparent h-[40px] z-30" ></div> */}
-          <motion.div animate={{opacity: expanded ? 1 : 0}} className="flex flex-col gap-2 overflow-y-auto overflow-x-hidden relative">
+          <motion.div animate={{opacity: expanded ? 1 : 0}} className="flex flex-col gap-1 overflow-y-auto overflow-x-hidden relative">
           
           {Array.isArray(convoHistory) &&
             convoHistory.map((convo) => (
@@ -188,7 +192,7 @@ const Sidebar = () => {
         </motion.div>
         </div>
       </div>
-      <div className="mt-auto flex flex-col gap-2 px-2">
+      <div className="mt-auto flex flex-col gap-1 px-2">
         <SidebarButton
           active={location.pathname == "/app/brain"}
           logo={<BrainIcon className=" " />}
@@ -201,7 +205,7 @@ const Sidebar = () => {
           Memory
         </SidebarButton>
         <SidebarButton
-          active={location.pathname == "/app/settings"}
+          active={location.pathname.includes("/app/settings")}
           logo={
             <motion.div
               variants={{
@@ -217,8 +221,8 @@ const Sidebar = () => {
           }
           expanded={expanded}
           onClick={() => {
-            // setExpanded(false)
-            navigate("/app/settings");
+            setExpanded(false)
+            navigate("/app/settings/preferences");
           }}
         >
           Settings
@@ -228,16 +232,16 @@ const Sidebar = () => {
         animate={{ height: expanded ? "70px" : "60px" }}
         className="w-full p-2"
       >
-        <div className="rounded-lg overflow-hidden w-full h-full p-2 flex  dark:bg-zinc-900/50 dark:text-white gap-2">
+        <div className="rounded-lg overflow-hidden w-full h-full p-2 flex  dark:bg-zinc-800/20 dark:text-white gap-2">
           <div className="h-full aspect-square shrink-0 rounded-full bg-surface"></div>
-          <div className="h-full flex flex-col">
+          <motion.div animate={{ opacity: expanded ? 1 : 0 }} className=" flex flex-col h-[70px]">
             <div className="text-sm font-medium dark:text-zinc-200 ">
               {name}
             </div>
             <div className="text-sm font-medium text-transparent bg-clip-text bg-gradient-to-r from-white to-transparent">
               {email}
             </div>
-          </div>
+          </motion.div>
         </div>
       </motion.div>
     </motion.div>

@@ -155,7 +155,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   return (
     <div className=" bottom-0  h-fit  text-foreground w-full flex items-center justify-center z-50 p-2">
-      <div className="bg-card w-full h-fit border flex flex-col transition-all rounded-lg border-border group focus-within:border-foreground/20 ">
+      <div className="bg-card/50 w-full h-fit border flex flex-col transition-all rounded-lg border-border group focus-within:border-foreground/20 ">
         <div className="relative">
           <textarea
             onChange={() => handleInputChange(chatInputRef.current?.value ?? "")}

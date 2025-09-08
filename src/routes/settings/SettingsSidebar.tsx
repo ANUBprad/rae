@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import ConnectX from "@/components/misc/ConnectX";
 import { useUserStore } from "@/store/userStore";
 import { CommandIcon, WrenchIcon } from "@phosphor-icons/react";
+import { SidebarButton } from "@/components/app/Sidebar";
 const SettingsButton = ({
   children,
   icon,
@@ -56,32 +57,57 @@ const SettingsButton = ({
 
 const SettingsSidebar = () => {
   const { email } = useUserStore();
+  const navigate = useNavigate()
+  const location = useLocation()
   return (
-    <div className="h-full flex-col w-fit py-[2px]  bg-background ">
-      <div className="min-w-0 w-[188px] py-[2px] px-[4px]">
-        <div className="focus-within:!text-foreground text-zinc-500  border-border rounded-md h-[42px] border focus-within:border-zinc-600 size-full relative flex items-center justify-center">
-          <div className="absolute left-0 ml-[14px] ">
-            {" "}
-            <Search size={16}></Search>
-          </div>
-          <input
-            className="size-full min-w-0 outline-none border-none text-sm pl-[36px]"
-            placeholder="Search"
-          ></input>
-        </div>
-      </div>
-      <SettingsButton
-        to="/app/settings/preferences"
-        icon={<WrenchIcon weight="bold" className="text-lg" />}
+    <div className="h-full flex-col border-r border-border flex w-[200px] shrink-0 bg-background p-2 gap-1">
+      <div className="relative h-[44px] dark:bg-zinc-950 focus-within:dark:bg-zinc-950 rounded-lg transition-all duration-100 border-2  dark:border-zinc-900 focus-within:dark:border-zinc-800">
+              <input
+                type="text"
+                
+                autoFocus
+                
+                
+                placeholder="Search"
+                className="w-full px-4 dark:focus:placeholder:text-zinc-400/0 placeholder:transition-colors h-full bg-transparent text-foreground placeholder:text-foreground/50 text-sm outline-none pr-12"
+              />
+
+          
+            </div>
+      <SidebarButton
+      active={location.pathname == "/app/settings/preferences"}
+        onClick={() => navigate("/app/settings/preferences")}
+        logo={<motion.div
+              variants={{
+                hover: {
+                  rotate: "45deg",
+                },
+              }}
+              transition={{ duration: 0.2, ease: "easeInOut", type: "tween" }}
+              className=""
+            >
+              <WrenchIcon weight="bold" className="" />
+            </motion.div>}
       >
         Preferences
-      </SettingsButton>
-      <SettingsButton
-        to="/app/settings/shortcuts"
-        icon={<CommandIcon className="text-lg" weight="bold" />}
+      </SidebarButton>
+      <SidebarButton
+      active={location.pathname == "/app/settings/shortcuts"}
+        onClick={() => navigate("/app/settings/shortcuts")}
+        logo={<motion.div
+              variants={{
+                hover: {
+                  rotate: "90deg",
+                },
+              }}
+              transition={{ duration: 0.2, ease: "easeInOut", type: "tween" }}
+              className=""
+            >
+              <CommandIcon weight="bold" className="" />
+            </motion.div>}
       >
         Shortcuts
-      </SettingsButton>
+      </SidebarButton>
       
 
       {/*<ConnectX
