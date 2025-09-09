@@ -71,6 +71,7 @@ interface ChatViewProps {
   expandedChat?: boolean;
   setExpandedChat?: (expanded: boolean) => void;
   windowScreenshot?: string;
+  isActive?: boolean;
 }
 
 const Option = ({
@@ -161,7 +162,9 @@ export const ChatView = ({
   windowName,
   windowIcon,
 
+
   windowScreenshot,
+  isActive,
 }: ChatViewProps) => {
   const { email } = useUserStore();
   const {
@@ -226,8 +229,8 @@ export const ChatView = ({
 
     console.log("Sending:", messages, "overlay convo id :", overlayConvoId);
 
-    // Use manual image if provided, otherwise use window screenshot
-    const imageToSend = manualImage || windowScreenshot || "";
+    // Use manual image if provided, otherwise use window screenshot (only if toggle is active)
+    const imageToSend = manualImage || (isActive ? windowScreenshot : "") || "";
     console.log(
       "Image to send:",
       imageToSend.length || 0,
@@ -424,8 +427,8 @@ export const ChatView = ({
 
     setIsAIThinking(true);
 
-    // Use manual image if provided, otherwise use window screenshot
-    const imageToSend = manualImage || windowScreenshot || "";
+    // Use manual image if provided, otherwise use window screenshot (only if toggle is active)
+    const imageToSend = manualImage || (isActive ? windowScreenshot : "") || "";
 
     try {
       const ai_res = await GenerateWithWebSearch({
@@ -494,8 +497,8 @@ export const ChatView = ({
 
     setIsAIThinking(true);
 
-    // Use manual image if provided, otherwise use window screenshot
-    const imageToSend = manualImage || windowScreenshot || "";
+    // Use manual image if provided, otherwise use window screenshot (only if toggle is active)
+    const imageToSend = manualImage || (isActive ? windowScreenshot : "") || "";
 
     try {
       const ai_res = await GenerateWithSupermemory({
@@ -826,7 +829,7 @@ export const ChatView = ({
                         duration: 0.2,
                         ease: "circInOut",
                       }}
-                      className="dark:bg-zinc-950 overflow-hidden rounded-lg absolute w-[200px]  bottom-full flex flex-col "
+                      className="dark:bg-zinc-950 z-40 overflow-hidden rounded-lg shadow-xl shadow-black/40 absolute w-[200px]  bottom-full flex flex-col "
                     >
                       <div
                         onClick={(e) => e.stopPropagation()}

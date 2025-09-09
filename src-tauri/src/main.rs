@@ -21,6 +21,8 @@ fn main() {
             functions::overlay::stick_chat_to_dot,
             functions::overlay::animate_chat_expand,
             functions::overlay::center_magic_dot,
+            functions::overlay::center_overlay_bar,
+            functions::overlay::toggle_pin_overlay,
             functions::overlay::enable_mouse_events,
             functions::overlay::toggle_magic_dot,
             functions::overlay::set_magic_dot_creation_enabled,
