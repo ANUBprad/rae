@@ -82,6 +82,8 @@ const Overlay = () => {
   const [isPinned, setIsPinned] = useState(false);
   const [inputText, setInputText] = useState(""); // For the main input bar
   const [micOn, setMicOn] = useState(false);
+  const [attachedImage, setAttachedImage] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isActive, setIsActive] = useState<boolean>(() =>
     localStorage.getItem("overlay_active") !== "false" // Default to true if not set
   );
@@ -97,6 +99,9 @@ const Overlay = () => {
   // State to control and pass data to the chat view
   const [showChat, setShowChat] = useState(false);
   const [initialChatMessage, setInitialChatMessage] = useState<
+    string | undefined
+  >();
+  const [initialAttachedImage, setInitialAttachedImage] = useState<
     string | undefined
   >();
 
@@ -542,20 +547,64 @@ const Overlay = () => {
     });
   };
 
+  // Handle image paste
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.indexOf("image") !== -1) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const base64 = event.target?.result as string;
+            setAttachedImage(base64);
+            setImagePreview(base64);
+          };
+          reader.readAsDataURL(file);
+        }
+        break;
+      }
+    }
+  };
+
+  // Clear attached image
+  const clearImage = () => {
+    setAttachedImage(null);
+    setImagePreview(null);
+  };
+
   // *** MODIFIED: This function now just sets state to trigger the chat view ***
   const handleSendFromMainBar = () => {
     const userMsg = inputText.trim();
     if (!userMsg) return;
+
+    // Store the attached image before clearing it
+    const imageToSend = attachedImage;
+
+    console.log("🎯 Overlay: Sending message with image:", {
+      message: userMsg,
+      hasImage: !!imageToSend,
+      imageLength: imageToSend?.length || 0
+    });
+
     setChatOpen(true);
     setShowChat(true);
     setInputText("");
     setInputActive(false);
+    setAttachedImage(null);
+    setImagePreview(null);
     fetchNotes();
     setInitialChatMessage(userMsg);
+    setInitialAttachedImage(imageToSend);
   };
 
   const handleOpenChat = () => {
     setInitialChatMessage(undefined); // Ensure no old message is passed
+    setInitialAttachedImage(undefined); // Ensure no old attached image is passed
     setShowChat(true);
     setChatOpen(true);
     setIsNotch(false);
@@ -571,6 +620,9 @@ const Overlay = () => {
     }, animations.overlayChat * 1000);
     // Clear screenshot when chat is closed
     setWindowScreenshot("");
+    // Clear initial states
+    setInitialChatMessage(undefined);
+    setInitialAttachedImage(undefined);
   };
 
   // const [expandedChat, setExpandedChat] = useState(false);
@@ -812,22 +864,56 @@ const Overlay = () => {
             {!showChat ? (
               inputActive ? (
                 <div
-                  className={`flex w-full h-full items-center border-l border-border px-4 py-2 ${
+                  className={`relative flex w-full h-full items-center border-l border-border px-4 py-2 ${
                     !isPinned ? "drag" : ""
                   } dark:bg-[#010101] bg-white max-w-xs`}
                 >
                   <input
                     autoFocus
                     type="text"
-                    className="no-drag text-foreground/60 text-sm font-medium border-none placeholder:font-medium outline-none bg-transparent w-full placeholder:dark:text-zinc-500 focus:dark:placeholder:text-zinc-400/0 placeholder:transition-colors" 
-                    placeholder="Ask Rae anything..."
+                    className="no-drag text-foreground/60 text-sm font-medium border-none placeholder:font-medium outline-none bg-transparent w-full placeholder:dark:text-zinc-500 focus:dark:placeholder:text-zinc-400/0 placeholder:transition-colors pr-12"
+                    placeholder={
+                      attachedImage
+                        ? "Describe what you want to know about this image..."
+                        : "Ask Rae anything or paste a screenshot..."
+                    }
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
+                    onPaste={handlePaste}
                     onBlur={() => setInputActive(false)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleSendFromMainBar();
                     }}
                   />
+
+                  {/* Image attachment indicator */}
+                  <AnimatePresence>
+                    {imagePreview && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                      >
+                        <div className="relative group">
+                          <img
+                            src={imagePreview}
+                            alt="Attached screenshot"
+                            className="w-6 h-6 object-cover rounded cursor-pointer"
+                            title="Screenshot attached - Click to remove"
+                            onClick={clearImage}
+                          />
+                          <button
+                            onClick={clearImage}
+                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-3 h-3 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Remove image"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               ) : (
                 <div
@@ -1045,6 +1131,7 @@ const Overlay = () => {
 
               onClose={handleCloseChatClick}
               initialMessage={initialChatMessage}
+              initialAttachedImage={initialAttachedImage}
               smoothResize={smoothResize}
               showChat={showChat}
               setShowChat={setShowChat}

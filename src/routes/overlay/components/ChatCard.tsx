@@ -64,6 +64,7 @@ interface ChatViewProps {
   setChatOpen: (open: boolean) => void;
   onClose: () => void;
   initialMessage?: string;
+  initialAttachedImage?: string;
   showChat?: boolean;
   setShowChat?: (show: boolean) => void;
   smoothResize: (width: number, height: number) => void;
@@ -156,6 +157,7 @@ const performSmoothResize = async (
 export const ChatView = ({
   onClose,
   initialMessage,
+  initialAttachedImage,
   setChatOpen,
   showChat,
   setShowChat,
@@ -291,12 +293,22 @@ export const ChatView = ({
   const handleAIResponse = async (userMsg: string, manualImage?: string) => {
     if (userMsg.trim() === "") return;
 
+    const finalImage = manualImage || attachedImage || windowScreenshot || "";
+
+    console.log("🤖 handleAIResponse: Processing message with image:", {
+      message: userMsg,
+      manualImageLength: manualImage?.length || 0,
+      attachedImageLength: attachedImage?.length || 0,
+      windowScreenshotLength: windowScreenshot?.length || 0,
+      finalImageLength: finalImage.length
+    });
+
     const newMessages = [
       ...messages,
       {
         sender: "user" as const,
         text: userMsg,
-        image: attachedImage || windowScreenshot || "",
+        image: finalImage,
       },
     ];
     setMessages(newMessages);
@@ -366,9 +378,19 @@ export const ChatView = ({
   // Effect to handle the initial message passed from the overlay bar
   useEffect(() => {
     if (initialMessage) {
-      handleAIResponse(initialMessage);
+      console.log("📨 ChatCard: Received initial message:", {
+        message: initialMessage,
+        hasImage: !!initialAttachedImage,
+        imageLength: initialAttachedImage?.length || 0
+      });
+
+      if (initialAttachedImage) {
+        setAttachedImage(initialAttachedImage);
+        setImagePreview(initialAttachedImage);
+      }
+      handleAIResponse(initialMessage, initialAttachedImage);
     }
-  }, [initialMessage]);
+  }, [initialMessage, initialAttachedImage]);
 
   // Scroll to bottom when new messages appear
   useEffect(() => {
