@@ -8,7 +8,7 @@ import {
 } from "@/utils/windowUtils";
 import { AnimatePresence, motion } from "framer-motion";
 import { OverlayButton } from "./OverlayComponents";
-import { ChatView } from "./chatView";
+import { ChatView } from "./ChatCard";
 import { Pin, X, Mic, Maximize, Palette } from "lucide-react";
 import notchSound from "../../../assets/sounds/bubble-pop-06-351337.mp3";
 import gradientGif from "../../../assets/gradient.gif";
@@ -17,8 +17,9 @@ import { animations } from "@/constants/animations";
 import { useUserStore } from "@/store/userStore";
 import { useNoteStore } from "@/store/noteStore";
 import { GetNotes } from "@/api/notes";
+import { ArrowElbowDownLeftIcon, MicrophoneIcon, PushPinIcon } from "@phosphor-icons/react";
 const DEFAULT_CHAT = [480, 470];
-const EXPANDED_CHAT = [600, 570];
+
 const NOTCH_TIMEOUT = 2000;
 
 // Constants for notch styling
@@ -48,16 +49,17 @@ const DEV_MAGIC_DOT_ENABLED = true;
 // Refs for global state
 const DISABLE_NOTCH_ON_SHOW = { current: false };
 const DISABLE_PIN_ON_SHOW = { current: false };
+const DISABLE_SAFETY_NOTCH = { current: false };
 
 /**
  * Helper functions for notch styling and layout
  */
 const getNotchClasses = (isNotch: boolean, showGradient: boolean) => {
-  const baseClasses = "flex flex-col overflow-hidden min-h-0";
+  const baseClasses = "flex flex-col  min-h-0 overflow-hidden";
 
   if (!isNotch) return `${baseClasses} text-foreground`;
 
-  const notchClasses = "w-[360px] h-24 -mt-2 border-border backdrop-blur-sm relative";
+  const notchClasses = "w-[360px] h-24 -mt-2 border-border backdrop-blur-sm absolute  overflow-hidden";
   const backgroundClasses = showGradient
     ? "bg-white/80 dark:bg-black/80"
     : "dark:bg-black bg-white";
@@ -291,7 +293,7 @@ const Overlay = () => {
         "Safety: Setting fallback notch timeout (10s) due to disabled flag"
       );
       setTimeout(() => {
-        if (isPinned && !showChat && !inputActive) {
+        if (isPinned && !showChat && !inputActive && !DISABLE_SAFETY_NOTCH.current) {
           console.log("Safety: Attempting to enable notch");
           DISABLE_NOTCH_ON_SHOW.current = false; // Reset the flag
           invoke("enable_notch")
@@ -303,6 +305,8 @@ const Overlay = () => {
             .catch((error) => {
               console.error("Safety: Failed to enable notch:", error);
             });
+        } else if (DISABLE_SAFETY_NOTCH.current) {
+          console.log("Safety: Skipping notch enable - safety flag is active (recent center operation)");
         }
       }, 10000); // 10 second fallback
     }
@@ -376,6 +380,23 @@ const Overlay = () => {
         const gradient = event.payload as { gradient: boolean };
         console.log("OverlayCard: Setting showGradient to:", gradient.gradient);
         setShowGradient(gradient.gradient);
+      }),
+
+      listen("toggle_pin_state", () => {
+        console.log("OverlayCard: Received toggle_pin_state event");
+        // Reset notch disable flag when using Ctrl+P to ensure proper 2s timeout
+        DISABLE_NOTCH_ON_SHOW.current = false;
+        console.log("Ctrl+P: Reset notch disable flag for proper 2s timeout");
+        handlePinClick();
+      }),
+
+      listen("center_overlay_bar", () => {
+        console.log("OverlayCard: Received center_overlay_bar event");
+        DISABLE_SAFETY_NOTCH.current = true;
+        // Reset after a reasonable time (30 seconds)
+        setTimeout(() => {
+          DISABLE_SAFETY_NOTCH.current = false;
+        }, 30000);
       })
     ];
 
@@ -502,8 +523,10 @@ const Overlay = () => {
     setIsPinned((prev) => {
       if (prev == false) {
         pinMagicDot();
-        // Reset the disable pin flag when user manually pins
+        // Reset both disable flags when user manually pins
         DISABLE_PIN_ON_SHOW.current = false;
+        DISABLE_NOTCH_ON_SHOW.current = false;
+        console.log("Pin: Reset notch disable flag for proper timing");
       }
       const newPinned = !prev;
       if (!newPinned) {
@@ -550,7 +573,7 @@ const Overlay = () => {
     setWindowScreenshot("");
   };
 
-  const [expandedChat, setExpandedChat] = useState(false);
+  // const [expandedChat, setExpandedChat] = useState(false);
   const [windowScreenshot, setWindowScreenshot] = useState<string>("");
   const [showScreenshot, setShowScreenshot] = useState(false);
   const [isHoveringScreenshot, setIsHoveringScreenshot] = useState(false);
@@ -662,6 +685,7 @@ const Overlay = () => {
       } justify-center ${isNotch ? "pt-2" : "p-2"} box-border`}
     >
       <motion.main
+      
         animate={
           isNotch
             ? {
@@ -673,8 +697,8 @@ const Overlay = () => {
                 scale: 1,
                 y: 0,
                 borderRadius: "12px",
-                width: expandedChat ? EXPANDED_CHAT[0] : DEFAULT_CHAT[0],
-                height: expandedChat ? EXPANDED_CHAT[1] : DEFAULT_CHAT[1],
+                width: DEFAULT_CHAT[0],
+                height:  DEFAULT_CHAT[1],
               }
         }
         transition={{
@@ -682,7 +706,7 @@ const Overlay = () => {
           duration: animations.overlayExpand,
           ease: "circOut",
         }}
-        className={getNotchClasses(isNotch, showGradient)}
+        className={`${getNotchClasses(isNotch, showGradient)} `}
         style={getNotchStyle(isNotch)}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -710,13 +734,14 @@ const Overlay = () => {
             opacity: { duration: 0.2, ease: "easeOut" },
             y: { duration: 0.3, ease: "easeOut" },
           }}
-          className={`flex items-center z-[100000] bg-background w-full h-[44px] shrink-0 ${
+          className={`flex items-center z-[100000] dark:bg-[#010101] bg-white  w-full h-[44px] shrink-0 ${
             !isPinned ? "drag" : ""
           } ${isNotch ? "pointer-events-none" : ""}`}
-          style={{ borderBottomLeftRadius: "12px", borderBottomRightRadius: "12px" }}
+          style={{  borderRadius: "12px" }}
         >
-          <OverlayButton
-            className="!border-none hover:!bg-foreground/5 !aspect-auto !w-[40px] !rounded-l-[12px] hover:!rounded-l-[12px]"
+          <div className="p-1 w-fit h-full">
+            <OverlayButton
+            // className="!border-none hover:!bg-foreground/5 !aspect-auto  !rounded-l-[12px] hover:!rounded-l-[12px]"
             customBgColor="white"
             active={false}
             onClick={() => setIsActive(!isActive)}
@@ -777,6 +802,7 @@ const Overlay = () => {
               )}
             </div>
           </OverlayButton>
+          </div>
 
           <div
             className={`group ${
@@ -788,12 +814,12 @@ const Overlay = () => {
                 <div
                   className={`flex w-full h-full items-center border-l border-border px-4 py-2 ${
                     !isPinned ? "drag" : ""
-                  } bg-background max-w-xs`}
+                  } dark:bg-[#010101] bg-white max-w-xs`}
                 >
                   <input
                     autoFocus
                     type="text"
-                    className="no-drag text-foreground/60 text-sm font-medium border-none outline-none bg-transparent w-full placeholder:text-foreground/50"
+                    className="no-drag text-foreground/60 text-sm font-medium border-none placeholder:font-medium outline-none bg-transparent w-full placeholder:dark:text-zinc-500 focus:dark:placeholder:text-zinc-400/0 placeholder:transition-colors" 
                     placeholder="Ask Rae anything..."
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
@@ -807,7 +833,7 @@ const Overlay = () => {
                 <div
                   className={`flex w-full h-full items-center border-l border-border px-4 py-2 ${
                     !isPinned ? "drag" : ""
-                  } bg-background max-w-xs cursor-text`}
+                  } dark:bg-[#010101] max-w-xs cursor-text`}
                   onClick={() => {
                     setInputActive(true);
                     if (isNotch) setIsNotch(false);
@@ -870,25 +896,26 @@ const Overlay = () => {
                   </div>
                 )}
               </div>
-            ) : null}
+            ) : <div className="size-full drag" ></div>}
           </div>
 
-          <div className="flex items-center h-full ml-auto">
+          <div className="flex items-center h-full ml-auto p-1 gap-1">
             {!showChat && inputText.trim().length > 0 && (
-              <button
-                className="no-drag h-full flex items-center gap-1 hover:bg-foreground/10  p-2 text-sm border-l border-border"
+              <OverlayButton
+                className="no-drag h-full flex items-center gap-1 hover:bg-foreground/10  p-2 text-sm  border-border"
                 onClick={handleSendFromMainBar}
               >
-                Send
-              </button>
+                <ArrowElbowDownLeftIcon weight="bold" />
+              </OverlayButton>
             )}
             <OverlayButton
-              onClick={() => {}}
+              onClick={() => {setMicOn(v => !v)}}
               active={micOn}
               title="Voice"
-              draggable={!isPinned}
+              draggable={!micOn}
+              className={micOn ? "!text-[#ffe941] dark:!text-surface " : ""}
             >
-              <Mic size={16} />
+              <MicrophoneIcon weight={micOn ? "fill" : "bold"} />
             </OverlayButton>
             <OverlayButton
               onClick={handlePinClick}
@@ -897,7 +924,7 @@ const Overlay = () => {
               draggable={!isPinned}
               className={isPinned ? "!text-[#ffe941] dark:!text-surface" : ""}
             >
-              <Pin size={16} />
+              <PushPinIcon weight={isPinned ? "fill" : "bold"} />
             </OverlayButton>
             {showChat ? (
               <OverlayButton
@@ -1014,6 +1041,8 @@ const Overlay = () => {
         <AnimatePresence mode="sync">
           {chatOpen && (
             <ChatView
+              setChatOpen={setChatOpen}
+
               onClose={handleCloseChatClick}
               initialMessage={initialChatMessage}
               smoothResize={smoothResize}
@@ -1021,9 +1050,9 @@ const Overlay = () => {
               setShowChat={setShowChat}
               windowName={windowName}
               windowIcon={windowIcon}
-              expandedChat={expandedChat}
-              setExpandedChat={setExpandedChat}
+
               windowScreenshot={windowScreenshot}
+              isActive={isActive}
             />
           )}
         </AnimatePresence>

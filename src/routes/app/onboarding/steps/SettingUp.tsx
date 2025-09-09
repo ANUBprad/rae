@@ -17,7 +17,7 @@ export default function FetchInfo() {
       setLoggedIn(true);
       setLoading(false);
       setTimeout(() => {
-        navigate("/app/landing");
+        navigate("/app/chat");
       }, 1000); // wait 1 second before redirect
     };
 
@@ -25,8 +25,8 @@ export default function FetchInfo() {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-yellow-100">
-      <div className="text-center text-xl font-medium text-gray-800">
+    <div className="min-h-screen flex items-center justify-center ">
+      <div className="text-center text-3xl font-medium text-white ">
         {loading ? (
           <div>Setting up user...</div>
         ) : (

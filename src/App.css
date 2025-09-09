@@ -37,7 +37,7 @@
   --font-dm-mono: "DM Mono", monospace;
   --color-foreground: #000000;
   --color-background: #ffffff;
-  --color-surface: #101010;
+  --color-surface: #ff2b44;
   --color-card: #ffffff;
   --color-border: #e5e5e5;
 }
@@ -70,8 +70,8 @@
       --color-card: #151515;
       --color-foreground: #ffffff;
       --color-border: #222222;
-      --color-background: #101010;
-      --color-surface: #ffe941;
+      --color-background: rgba(0,0,0, 0.9);
+      --color-surface: #ff2b44;
     }
   }
 }

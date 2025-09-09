@@ -72,7 +72,7 @@ function ShortcutRow({
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <div className="px-5 py-2.5 bg-background border-b border-border">
+    <div className="px-5 py-2.5  border-b border-border">
       <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
         {title}
       </span>
@@ -82,7 +82,7 @@ function SectionHeader({ title }: { title: string }) {
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-border overflow-hidden bg-background">
+    <div className="rounded-xl border border-border overflow-hidden ">
       {children}
     </div>
   );

@@ -5,8 +5,8 @@ type Variant = "filled" | "outline" | "text";
 
 const variants: Record<Variant, string> = {
   filled:
-    "bg-surface  dark:hover:bg-surface dark:text-black hover:bg-[#292929FF]  text-white font-medium shadow-[inset_0_-4px_4px_rgba(0,0,0,0.07),inset_0_4px_4px_rgba(255,255,255,0.25)] dark:shadow-[inset_0_-4px_4px_rgba(0,0,0,0.07),inset_0_4px_4px_rgba(255,255,255,0.1)]",
-  outline: "border-2 font-medium hover:bg-foreground/10 border-border",
+    "rounded-lg dark:bg-zinc-800/20 border-2 outline-none focus:border-white  hover:dark:bg-zinc-800 dark:border-surface dark:text-white font-bold",
+  outline: "border-2 font-medium hover:bg-foreground/10 border-border focus:border-surface !outline-none",
   text: "",
 };
 
@@ -29,7 +29,7 @@ const Button = ({
       onClick={onClick}
       {...props}
       className={twMerge(
-        `${variants[variant]} px-4 py-2  !cursor-pointer rounded-lg transition-colors`,
+        `${variants[variant]} px-4 py-2  !cursor-pointer   rounded-lg duration-100 transition-colors`,
         className
       )}
     >

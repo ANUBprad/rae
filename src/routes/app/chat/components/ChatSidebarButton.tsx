@@ -75,7 +75,7 @@ const ChatSidebarButton: React.FC<ChatSidebarButtonProps> = ({
             transition={
               active && isOverflowing
                 ? { repeat: Infinity, duration: scrollDuration, ease: "linear" }
-                : { duration: 0.3, ease: "backInOut" }
+                : { duration: 0.6, ease: "backInOut" }
             }
           >
             {children}

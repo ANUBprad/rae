@@ -1,7 +1,7 @@
 import React from "react";
 
 export interface OverlayButtonProps {
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
   active?: boolean;
   title?: string;
   children: React.ReactNode;
@@ -19,17 +19,21 @@ export const OverlayButton = ({
   customBgColor = "",
   draggable = true,
 }: OverlayButtonProps) => (
-  <button
-    onClick={onClick}
+  <div onClick={(e) => {
+    onClick(e);
+  }} className="h-full group aspect-square shrink-0 ">
+    <button
+    
     className={`${
-      draggable ? "drag" : ""
-    } h-full bg-transparent hover:bg-foreground/10 flex items-center justify-center aspect-square shrink-0 border-l border-border transition-all duration-150 first:rounded-l-[12px] last:rounded-r-[12px]  ${
-      active ? `bg-foreground/20  text-surface rounded-lg` : ""
+      draggable ? "" : ""
+    } h-full bg-transparent focus:bg-zinc-900  group-hover:dark:bg-zinc-900 outline-none  active:outline-2 active:outline-surface group-hover:dark:text-white dark:text-zinc-400  flex items-center justify-center aspect-square shrink-0 rounded-lg transition-all duration-100   ${
+      active ? `dark:bg-surface/10  text-surface ` : ""
     } ${className}`}
     title={title}
   >
     {children}
   </button>
+  </div>
 );
 
 // Example usage (replace with your logic):

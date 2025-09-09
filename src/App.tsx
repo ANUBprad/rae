@@ -35,6 +35,9 @@ import Brain from "./routes/app/notes/page";
 import Agents from "./routes/app/agents/page";
 import { emit, listen } from "@tauri-apps/api/event";
 import Agent from "./routes/app/agents/agent/page";
+import Memory from "./routes/settings/memory/page";
+import { LaunchOverlayWindow } from "./routes/overlay/components/OverlayLauncher";
+import { useUserStore } from "./store/userStore";
 
 function App() {
   const { darkTheme, initializeTheme } = useDarkThemeStore();
@@ -105,12 +108,92 @@ function App() {
           }
           lastFired = now;
           try {
-            await invoke("show_overlay_center");
+            await invoke("center_overlay_bar");
           } catch (e) {
             console.error("Failed to show overlay center", e);
           }
         });
         const ok = await isRegistered(combo);
+      } catch (e) {
+        console.error("Failed to register global shortcut", e);
+      }
+    };
+    setup();
+    return () => {
+      unregister(combo).catch(() => {});
+    };
+  }, []);
+
+  // Register Ctrl+M shortcut to center overlay bar
+  useEffect(() => {
+    const combo = "Ctrl+M";
+    const cooldownMs = 300;
+    let lastFired = 0;
+    const setup = async () => {
+      try {
+        try {
+          if (await isRegistered(combo)) {
+            await unregister(combo);
+          }
+        } catch (e) {
+          console.warn("isRegistered/unregister failed; continuing", e);
+        }
+        await register(combo, async () => {
+          console.log("Global shortcut pressed:", combo);
+          const now = Date.now();
+          if (now - lastFired < cooldownMs) {
+            return;
+          }
+          lastFired = now;
+          try {
+            await invoke("center_overlay_bar");
+            console.log("Invoked center_overlay_bar");
+          } catch (e) {
+            console.error("Failed to center overlay bar", e);
+          }
+        });
+        const ok = await isRegistered(combo);
+        console.log("Registered global shortcut:", combo, ok);
+      } catch (e) {
+        console.error("Failed to register global shortcut", e);
+      }
+    };
+    setup();
+    return () => {
+      unregister(combo).catch(() => {});
+    };
+  }, []);
+
+  // Register Ctrl+P shortcut to toggle pin state
+  useEffect(() => {
+    const combo = "Ctrl+P";
+    const cooldownMs = 300;
+    let lastFired = 0;
+    const setup = async () => {
+      try {
+        try {
+          if (await isRegistered(combo)) {
+            await unregister(combo);
+          }
+        } catch (e) {
+          console.warn("isRegistered/unregister failed; continuing", e);
+        }
+        await register(combo, async () => {
+          console.log("Global shortcut pressed:", combo);
+          const now = Date.now();
+          if (now - lastFired < cooldownMs) {
+            return;
+          }
+          lastFired = now;
+          try {
+            await invoke("toggle_pin_overlay");
+            console.log("Invoked toggle_pin_overlay");
+          } catch (e) {
+            console.error("Failed to toggle pin overlay", e);
+          }
+        });
+        const ok = await isRegistered(combo);
+        console.log("Registered global shortcut:", combo, ok);
       } catch (e) {
         console.error("Failed to register global shortcut", e);
       }
@@ -223,7 +306,13 @@ function App() {
       unlisten.then((unlisten) => unlisten());
     };
   });
-
+  const {loggedIn} = useUserStore();
+useEffect(() => {
+    // Only launch the magic dot when logged in
+    if (loggedIn) {
+      LaunchOverlayWindow();
+    }
+  }, [loggedIn]);
   return (
     // <div className="size-full bg-background rounded-lg overflow-hidden">
     <Routes>
@@ -240,6 +329,7 @@ function App() {
           <Route path="" element={<SettingsPage />}></Route>
           <Route path="shortcuts" element={<ShortcutsPage />} />
           <Route path="preferences" element={<Preferences />} />
+          <Route path="memory" element={<Memory />} />
         </Route>
       </Route>
     </Routes>

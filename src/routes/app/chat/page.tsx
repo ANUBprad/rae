@@ -1,3 +1,5 @@
+// Fetch messages when currentConvoId changes (except -1)
+
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,6 +22,7 @@ import CodeBlock from "@/components/misc/CodeBlock";
 import ChatInput from "./components/ChatInput";
 import { useNoteStore } from "@/store/noteStore";
 import { GetNotes } from "@/api/notes";
+import Chat from "./components/Chat";
 const MODELS = [
   { label: "OpenAi", value: "gpt-4o-mini" },
   { label: "OpenAi", value: "gpt-4o" },
@@ -70,9 +73,16 @@ export default function ChatWindow() {
     if (email) {
       fetchConvoHistory(email);
       setCurrentConvo(-1);
+      // Fetch messages when currentConvoId changes (and is not -1)
     }
   }, [email, fetchConvoHistory]);
-
+  useEffect(() => {
+    if (currentConvoId !== -1) {
+      convoChange(currentConvoId);
+    } else {
+      setMessages([]);
+    }
+  }, [currentConvoId]);
   // Scroll to bottom on new message
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -105,16 +115,16 @@ export default function ChatWindow() {
           imageToSend = (await invoke("capture_window_screenshot")) as string;
           console.log(
             "Screenshot captured for normal chat, length:",
-            imageToSend.length,
+            imageToSend.length
           );
           console.log(
             "Normal chat screenshot starts with:",
-            imageToSend.substring(0, 50),
+            imageToSend.substring(0, 50)
           );
         } catch (screenshotError) {
           console.error(
             "Failed to capture screenshot for normal chat:",
-            screenshotError,
+            screenshotError
           );
           // Continue without screenshot if capture fails
         }
@@ -254,61 +264,24 @@ export default function ChatWindow() {
     // The actual logic is in handleSend function above
     return;
   };
+
+  const { name } = useUserStore();
   return (
-    <div className="w-full h-[calc(100vh-36px)] flex bg-background">
-      {/* Sidebar - Chat history */}
-      <div className="w-fit shrink-0 h-full flex flex-col py-[2px] border-r border-border bg-background">
-        <div className="flex-1 overflow-y-auto ">
-          {convoHistory.length === 0 ? (
-            <div className="text-gray-500 text-sm text-center mt-8 px-2">
-              <p className="mb-2">No conversations yet</p>
-              <p className="text-xs text-gray-400">
-                Start a new chat to see your history here
-              </p>
-            </div>
-          ) : (
-            convoHistory.map((convo, idx) => (
-              <ChatSidebarButton
-                key={convo.id !== undefined ? convo.id : `temp-${idx}`}
-                icon={<MessageCircle size={16} />}
-                active={currentConvoId === convo.id}
-                onClick={() => convoChange(convo.id)}
-              >
-                {convo.title || "New Chat"}
-              </ChatSidebarButton>
-            ))
-          )}
-          <ChatSidebarButton
-            icon={<Plus size={16} />}
-            active={false}
-            onClick={handleNewChat}
-          >
-            New Chat
-          </ChatSidebarButton>
-        </div>
-        <div className=""></div>
-
-        {convoTitleLoading && (
-          <div className="flex justify-center py-2">
-            <Loader2 className="animate-spin text-zinc-600" size={18} />
-          </div>
-        )}
-      </div>
-
-      {/* Chat Area */}
-      <div className="flex flex-col w-full">
+    <div className="w-full h-[calc(100vh-36px)]  bg-background flex ">
+      {/* Chat Area only, sidebar removed */}
+      <div className="flex flex-col w-full overflow-hidden relative">
         <motion.div
           ref={chatContainerRef}
-          className="flex-1 flex flex-col overflow-y-auto  border-border relative min-h-0"
+          className="flex flex-col overflow-hidden border-border relative h-[calc(100vh-170px)]"
         >
           <div className="flex-1 flex flex-col overflow-y-auto p-2 space-y-1 scrollbar-hide">
             {loadingMessages && (
-              <div className="absolute inset-0 flex items-center justify-center bg-background/70 z-10">
+              <div className="absolute inset-0 flex items-center justify-center  z-10">
                 <Loader2 className="animate-spin text-zinc-700" size={24} />
               </div>
             )}
 
-            {messages.length === 0 && !loadingMessages && (
+            {/* {messages.length === 0 && !loadingMessages && (
               <div className="flex-1 flex items-center justify-center text-zinc-500">
                 <div className="text-center">
                   <p className="text-lg mb-2">Start a conversation</p>
@@ -317,7 +290,7 @@ export default function ChatWindow() {
                   </p>
                 </div>
               </div>
-            )}
+            )} */}
 
             {messages.map((msg, idx) => (
               <div
@@ -385,94 +358,52 @@ export default function ChatWindow() {
               </div>
             ))}
 
-            {/* AI Thinking Animation - Thinking GIF */}
-            {isAIThinking && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.2 }}
-                className="self-start flex items-center justify-center"
-              >
-                <img
-                  src={thinkingGif}
-                  alt="AI thinking animation"
-                  className="w-10 h-10 object-cover"
-                />
-              </motion.div>
-            )}
+            {/* AI Thinking Animation - Simple Pulsing Dot */}
+            <AnimatePresence mode="popLayout">
+              {isAIThinking && (
+                <motion.div
+                  className="flex gap-2 mt-2 mx-4 dark:text-zinc-200  font-medium items-center text-sm h-fit"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <motion.div
+                    initial={{ borderRadius: "0%", rotate: "90deg" }}
+                    animate={{ borderRadius: ["0%","50%", "0%"], rotate: ["90deg", "180deg", "270deg"] }}
+                    transition={{
+                      duration: 1,
+                      ease: "linear",
+                      repeat: Infinity,
+                      repeatType: "loop",
+                    }}
+                    className="self-start flex items-center relative border-[3px] border-surface size-[20px] justify-center"
+                  ></motion.div>
+
+                  <div className="animate-pulse">Rae is thinking...</div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <div ref={bottomRef} />
           </div>
 
           {/* Input area with overlay icons */}
-          <div className="relative">
-            {/* Typing Icons - appear when user is typing */}
-            <AnimatePresence>
-              {isTyping && currentInputMessage.trim() && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute bottom-full right-4 mb-2 flex gap-2 z-10"
-                >
-                  {/* Web Search Icon */}
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setSelectedTool(selectedTool === 1 ? 0 : 1)}
-                    className={`rounded-full p-2 shadow-md transition-all duration-200 flex items-center justify-center ${
-                      selectedTool === 1
-                        ? "bg-blue-600 ring-2 ring-blue-400/50 shadow-blue-500/30"
-                        : "bg-blue-500/90 hover:bg-blue-600 hover:shadow-blue-500/20"
-                    } text-white backdrop-blur-sm border border-white/20`}
-                    title={
-                      selectedTool === 1
-                        ? "Web search active - click to deactivate"
-                        : "Activate web search"
-                    }
-                  >
-                    <Globe size={16} />
-                  </motion.button>
-
-                  {/* Supermemory Icon */}
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setSelectedTool(selectedTool === 2 ? 0 : 2)}
-                    className={`rounded-full p-2 shadow-md transition-all duration-200 flex items-center justify-center ${
-                      selectedTool === 2
-                        ? "bg-purple-600 ring-2 ring-purple-400/50 shadow-purple-500/30"
-                        : "bg-purple-500/90 hover:bg-purple-600 hover:shadow-purple-500/20"
-                    } text-white backdrop-blur-sm border border-white/20`}
-                    title={
-                      selectedTool === 2
-                        ? "Supermemory active - click to deactivate"
-                        : "Activate supermemory"
-                    }
-                  >
-                    <Brain size={16} />
-                  </motion.button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <ChatInput
-              onSend={handleSend}
-              onWebSearch={handleWebSearch}
-              onSupermemory={handleSupermemory}
-              currentModel={currentModel}
-              setCurrentModel={setCurrentModel}
-              models={MODELS}
-              initialMessage={initialMessage}
-              onTypingChange={handleTypingChange}
-              onMessageChange={setCurrentInputMessage}
-              selectedTool={selectedTool}
-              onToolChange={setSelectedTool}
-            />
-          </div>
         </motion.div>
+        <Chat
+          name={name}
+          onSend={handleSend}
+          onWebSearch={handleWebSearch}
+          onSupermemory={handleSupermemory}
+          currentModel={currentModel}
+          setCurrentModel={setCurrentModel}
+          models={MODELS}
+          initialMessage={initialMessage}
+          onTypingChange={handleTypingChange}
+          onMessageChange={setCurrentInputMessage}
+          selectedTool={selectedTool}
+          onToolChange={setSelectedTool}
+          initial={currentConvoId !== -1}
+        />
       </div>
     </div>
   );

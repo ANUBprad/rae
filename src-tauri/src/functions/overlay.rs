@@ -1,7 +1,12 @@
 use crate::utils::{smooth_move, smooth_resize};
 use enigo::{Enigo, MouseControllable};
+use window_vibrancy::{apply_acrylic, clear_acrylic, clear_blur};
 use std::sync::atomic::{AtomicBool, Ordering};
-use tauri::{AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder, Monitor};
+use tauri::{
+    utils::config::WindowEffectsConfig,
+    window::{Effect, EffectsBuilder},
+    AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder,
+};
 
 // Import stealth functions
 use super::stealth::apply_stealth_mode_to_window;
@@ -9,40 +14,19 @@ use super::stealth::apply_stealth_mode_to_window;
 // Controls whether toggle_magic_dot is allowed to create the window
 static ALLOW_MAGIC_DOT_CREATE: AtomicBool = AtomicBool::new(true);
 
-// Helper function to get the monitor that contains a given position
-fn get_monitor_for_position(app: &AppHandle, position: &tauri::PhysicalPosition<i32>) -> Option<Monitor> {
-    if let Ok(monitors) = app.available_monitors() {
-        for monitor in monitors {
-            let monitor_pos = monitor.position();
-            let monitor_size = monitor.size();
-
-            // Check if the position is within this monitor's bounds
-            if position.x >= monitor_pos.x
-                && position.x < monitor_pos.x + monitor_size.width as i32
-                && position.y >= monitor_pos.y
-                && position.y < monitor_pos.y + monitor_size.height as i32
-            {
-                return Some(monitor);
-            }
-        }
-    }
-    None
-}
+// Store the last position when overlay is hidden, so we can restore it when showing again
+static mut LAST_OVERLAY_POSITION: Option<tauri::PhysicalPosition<i32>> = None;
 
 #[tauri::command]
 pub fn follow_magic_dot(app: AppHandle) {
     if let Some(window) = app.get_webview_window("overlay") {
-        if let (Ok(current_size), Ok(current_pos)) =
-            (window.outer_size(), window.outer_position())
+        if let (Ok(current_size), Ok(Some(monitor))) =
+            (window.outer_size(), window.current_monitor())
         {
-            // Use the helper function to get the correct monitor for the current position
-            if let Some(monitor) = get_monitor_for_position(&app, &current_pos) {
-                let monitor_pos = monitor.position();
-                let screen_size = monitor.size();
-                let center_x = monitor_pos.x + ((screen_size.width as i32 - current_size.width as i32) / 2).max(0);
-                let target_pos = tauri::PhysicalPosition { x: center_x, y: monitor_pos.y };
-                let _ = window.set_position(tauri::Position::Physical(target_pos));
-            }
+            let screen_size = monitor.size();
+            let center_x = ((screen_size.width as i32 - current_size.width as i32) / 2).max(0);
+            let target_pos = tauri::PhysicalPosition { x: center_x, y: 0 };
+            let _ = window.set_position(tauri::Position::Physical(target_pos));
         }
         let _ = window.show();
         let _ = window.set_focus();
@@ -54,19 +38,21 @@ pub fn follow_magic_dot(app: AppHandle) {
 #[tauri::command]
 pub fn pin_magic_dot(app: AppHandle) {
     if let Some(window) = app.get_webview_window("overlay") {
-        if let (Ok(current_pos), Ok(current_size)) = (
+        println!("Pinning magic dot");
+        // clear_blur(&window);
+        // clear_acrylic(&window);
+        
+        if let (Ok(current_pos), Ok(current_size), Ok(Some(monitor))) = (
             window.outer_position(),
             window.outer_size(),
+            window.current_monitor(),
         ) {
-            // Use the helper function to get the correct monitor for the current position
-            if let Some(monitor) = get_monitor_for_position(&app, &current_pos) {
-                let monitor_pos = monitor.position();
-                let screen_size = monitor.size();
-                let center_x = monitor_pos.x + ((screen_size.width as i32 - current_size.width as i32) / 2).max(0);
-                let target_pos = tauri::PhysicalPosition { x: center_x, y: monitor_pos.y };
-                NotchWatcher::start(window.clone());
-                smooth_move(&window, current_pos, target_pos, 8, 12);
-            }
+            let screen_size = monitor.size();
+            let center_x = ((screen_size.width as i32 - current_size.width as i32) / 2).max(0);
+            let target_pos = tauri::PhysicalPosition { x: center_x, y: 0 };
+            // let _ = window.set_ignore_cursor_events(true);
+            NotchWatcher::start(window.clone());
+            smooth_move(&window, current_pos, target_pos, 16, 8);
         }
     }
 }
@@ -83,38 +69,36 @@ pub fn stick_chat_to_dot(app: AppHandle) {
                 break;
             };
 
-            if let (Ok(dot_pos), Ok(dot_size)) = (
+            if let (Ok(dot_pos), Ok(dot_size), Ok(Some(monitor))) = (
                 dot.outer_position(),
                 dot.outer_size(),
+                dot.current_monitor(),
             ) {
-                // Use the helper function to get the correct monitor for the dot's position
-                if let Some(monitor) = get_monitor_for_position(&app, &dot_pos) {
-                    let screen_size = monitor.size();
-                    let preferred_y = dot_pos.y + dot_size.height as i32;
-                    let fallback_y = dot_pos.y - 200 - 10 - 100;
+                let screen_size = monitor.size();
+                let preferred_y = dot_pos.y + dot_size.height as i32;
+                let fallback_y = dot_pos.y - 200 - 10 - 100;
 
-                    let y = if preferred_y + 200 < screen_size.height as i32 {
-                        preferred_y
-                    } else {
-                        fallback_y.max(0)
-                    };
+                let y = if preferred_y + 200 < screen_size.height as i32 {
+                    preferred_y
+                } else {
+                    fallback_y.max(0)
+                };
 
-                    let chat_width: i32 = chat.outer_size().map(|s| s.width as i32).unwrap_or(780);
-                    let x = dot_pos.x + (dot_size.width as i32 / 2) - (chat_width / 2);
+                let chat_width: i32 = chat.outer_size().map(|s| s.width as i32).unwrap_or(780);
+                let x = dot_pos.x + (dot_size.width as i32 / 2) - (chat_width / 2);
 
-                    let tx = x.max(0);
-                    let ty = y;
-                    if last_sent
-                        .map(|(lx, ly)| lx == tx && ly == ty)
-                        .unwrap_or(false)
-                        == false
-                    {
-                        let _ = chat.set_position(tauri::Position::Physical(tauri::PhysicalPosition {
-                            x: tx,
-                            y: ty,
-                        }));
-                        last_sent = Some((tx, ty));
-                    }
+                let tx = x.max(0);
+                let ty = y;
+                if last_sent
+                    .map(|(lx, ly)| lx == tx && ly == ty)
+                    .unwrap_or(false)
+                    == false
+                {
+                    let _ = chat.set_position(tauri::Position::Physical(tauri::PhysicalPosition {
+                        x: tx,
+                        y: ty,
+                    }));
+                    last_sent = Some((tx, ty));
                 }
             }
             std::thread::sleep(std::time::Duration::from_millis(16));
@@ -143,26 +127,89 @@ pub fn animate_chat_expand(app: AppHandle, to_width: u32, to_height: u32) {
 #[tauri::command]
 pub fn center_magic_dot(app: AppHandle) {
     if let Some(window) = app.get_webview_window("overlay") {
-        if let (Ok(size), Ok(current_pos)) = (
+        if let (Ok(Some(monitor)), Ok(size), Ok(current_pos)) = (
+            window.current_monitor(),
             window.outer_size(),
             window.outer_position(),
         ) {
-            // Use the helper function to get the correct monitor for the current position
-            if let Some(monitor) = get_monitor_for_position(&app, &current_pos) {
-                let monitor_pos = monitor.position();
-                let screen_size = monitor.size();
-                window.set_ignore_cursor_events(false).ok();
-                let x = monitor_pos.x + ((screen_size.width as i32 - size.width as i32) / 2).max(0);
-                let y = monitor_pos.y + ((screen_size.height as i32 - size.height as i32) / 2).max(0);
-                smooth_move(
-                    &window,
-                    current_pos,
-                    tauri::PhysicalPosition { x, y },
-                    8,
-                    12,
-                );
-            }
+            let screen = monitor.size();
+            window.set_ignore_cursor_events(false).ok();
+            let x = ((screen.width as i32 - size.width as i32) / 2).max(0);
+            let y = ((screen.height as i32 - size.height as i32) / 2).max(0);
+            smooth_move(
+                &window,
+                current_pos,
+                tauri::PhysicalPosition { x, y },
+                16,
+                8,
+            );
         }
+    }
+}
+
+#[tauri::command]
+pub fn center_overlay_bar(app: AppHandle) {
+    if let Some(window) = app.get_webview_window("overlay") {
+        println!("center_overlay_bar: Starting centering process");
+
+        // Emit events to unpin and disable notch mode first
+        let _ = window.emit("disable_pin_on_show", ());
+        let _ = window.emit("disable_notch_on_show", ());
+        let _ = window.emit("center_overlay_bar", ());
+        println!("center_overlay_bar: Emitted disable events and center notification");
+
+        // Show the window if it's hidden
+        let _ = window.show();
+        let _ = window.set_focus();
+        let _ = window.set_always_on_top(true);
+        println!("center_overlay_bar: Window shown and focused");
+
+        // Make sure it's not in notch mode by enabling mouse events
+        let _ = window.set_ignore_cursor_events(false);
+
+        // Give frontend time to process the state changes
+        std::thread::sleep(std::time::Duration::from_millis(100));
+
+        // Get current size after frontend has had time to update
+        if let (Ok(Some(monitor)), Ok(size), Ok(current_pos)) = (
+            window.current_monitor(),
+            window.outer_size(),
+            window.outer_position(),
+        ) {
+            println!("center_overlay_bar: Current size: {}x{}", size.width, size.height);
+            let screen = monitor.size();
+            let x = ((screen.width as i32 - size.width as i32) / 2).max(0);
+            let y = ((screen.height as i32 - size.height as i32) / 2).max(0);
+
+            println!("center_overlay_bar: Centering to position: ({}, {})", x, y);
+            let target_pos = tauri::PhysicalPosition { x, y };
+            smooth_move(
+                &window,
+                current_pos,
+                target_pos,
+                16,  // More steps for smoother animation
+                8,   // Shorter delay for fluid motion
+            );
+        } else {
+            println!("center_overlay_bar: Failed to get monitor/size/position");
+        }
+
+        // Don't start notch watcher when centering - we want bar mode, not notch mode
+        println!("center_overlay_bar: Completed centering process (bar mode)");
+    } else {
+        println!("center_overlay_bar: Could not find overlay window");
+    }
+}
+
+#[tauri::command]
+pub fn toggle_pin_overlay(app: AppHandle) {
+    if let Some(window) = app.get_webview_window("overlay") {
+        println!("toggle_pin_overlay: Toggling pin state");
+        // Emit event to frontend to toggle pin state
+        let _ = window.emit("toggle_pin_state", ());
+        println!("toggle_pin_overlay: Emitted toggle_pin_state event");
+    } else {
+        println!("toggle_pin_overlay: Could not find overlay window");
     }
 }
 
@@ -181,81 +228,17 @@ pub fn close_magic_chat(app: AppHandle) {
 }
 
 #[tauri::command]
-pub fn show_overlay_center(app: AppHandle) {
-    if let Some(dot) = app.get_webview_window("overlay") {
-        let _ = dot.show();
-        let _ = dot.set_focus();
-        let _ = dot.set_always_on_top(true);
-        let _ = dot.set_ignore_cursor_events(false);
-
-        // Emit notch-hover event to expand from notch to bar if currently in notch mode
-        let _ = dot.emit("notch-hover", ());
-
-        // Emit event to unpin the overlay so it doesn't auto-collapse back to notch
-        let _ = dot.emit("unpin_for_center", ());
-
-        if let (Ok(current_size), Ok(current_pos)) =
-            (dot.outer_size(), dot.outer_position())
-        {
-            // Use the helper function to get the correct monitor for the current position
-            if let Some(monitor) = get_monitor_for_position(&app, &current_pos) {
-                let monitor_pos = monitor.position();
-                let screen_size = monitor.size();
-                let center_x = monitor_pos.x +
-                    ((screen_size.width as i32 - current_size.width as i32) / 2).max(0);
-                let center_y = monitor_pos.y +
-                    ((screen_size.height as i32 - current_size.height as i32) / 2).max(0);
-                let target_pos = tauri::PhysicalPosition { x: center_x, y: center_y };
-                smooth_move(&dot, current_pos, target_pos, 12, 8);
-            }
-        }
-        NotchWatcher::start(dot.clone());
-    } else {
-        // If overlay doesn't exist, create it
-        let overlay_window = WebviewWindowBuilder::new(&app, "overlay", WebviewUrl::App("/overlay".into()))
-            .title("rae")
-            .inner_size(500.0, 60.0)
-            .decorations(false)
-            .transparent(true)
-            .always_on_top(true)
-            .resizable(false)
-            .shadow(false)
-            .fullscreen(false)
-            .maximizable(false)
-            .skip_taskbar(true) //that's all
-            .build()
-            .unwrap();
-
-        let _ = overlay_window.show();
-        let _ = overlay_window.set_focus();
-        let _ = overlay_window.set_always_on_top(true);
-
-        // Position in center with smooth animation
-        if let (Ok(current_size), Ok(current_pos)) =
-            (overlay_window.outer_size(), overlay_window.outer_position())
-        {
-            // Use the helper function to get the correct monitor for the current position
-            if let Some(monitor) = get_monitor_for_position(&app, &current_pos) {
-                let monitor_pos = monitor.position();
-                let screen_size = monitor.size();
-                let center_x = monitor_pos.x +
-                    ((screen_size.width as i32 - current_size.width as i32) / 2).max(0);
-                let center_y = monitor_pos.y +
-                    ((screen_size.height as i32 - current_size.height as i32) / 2).max(0);
-                let target_pos = tauri::PhysicalPosition { x: center_x, y: center_y };
-                smooth_move(&overlay_window, current_pos, target_pos, 12, 8);
-            }
-        }
-
-        NotchWatcher::start(overlay_window);
-    }
-}
-
-#[tauri::command]
 pub fn toggle_magic_dot(app: AppHandle) {
     if let Some(dot) = app.get_webview_window("overlay") {
         match dot.is_visible() {
             Ok(true) => {
+                // Save current position before hiding
+                if let Ok(current_pos) = dot.outer_position() {
+                    unsafe {
+                        LAST_OVERLAY_POSITION = Some(current_pos);
+                    }
+                    println!("toggle_magic_dot: Saved position ({}, {}) before hiding", current_pos.x, current_pos.y);
+                }
                 let _ = dot.hide();
             }
             Ok(false) => {
@@ -264,17 +247,23 @@ pub fn toggle_magic_dot(app: AppHandle) {
                 let _ = dot.set_always_on_top(true);
                 let _ = dot.set_ignore_cursor_events(false);
                 NotchWatcher::start(dot.clone());
-                if let (Ok(current_size), Ok(current_pos)) =
-                    (dot.outer_size(), dot.outer_position())
-                {
-                    // Use the helper function to get the correct monitor for the current position
-                    if let Some(monitor) = get_monitor_for_position(&app, &current_pos) {
-                        let monitor_pos = monitor.position();
-                        let screen_size = monitor.size();
-                        let center_x = monitor_pos.x +
-                            ((screen_size.width as i32 - current_size.width as i32) / 2).max(0);
-                        let target_pos = tauri::PhysicalPosition { x: center_x, y: monitor_pos.y };
-                        let _ = dot.set_position(tauri::Position::Physical(target_pos));
+
+                // Restore to last saved position, or center if no saved position
+                unsafe {
+                    if let Some(saved_pos) = LAST_OVERLAY_POSITION {
+                        println!("toggle_magic_dot: Restoring to saved position ({}, {})", saved_pos.x, saved_pos.y);
+                        let _ = dot.set_position(tauri::Position::Physical(saved_pos));
+                    } else {
+                        // Fallback to centering if no saved position
+                        if let (Ok(current_size), Ok(Some(monitor))) =
+                            (dot.outer_size(), dot.current_monitor())
+                        {
+                            let screen_size = monitor.size();
+                            let center_x =
+                                ((screen_size.width as i32 - current_size.width as i32) / 2).max(0);
+                            let target_pos = tauri::PhysicalPosition { x: center_x, y: 0 };
+                            let _ = dot.set_position(tauri::Position::Physical(target_pos));
+                        }
                     }
                 }
             }
@@ -297,6 +286,12 @@ pub fn toggle_magic_dot(app: AppHandle) {
         .shadow(false)
         .always_on_top(true)
         .inner_size(500.0, 60.0)
+        .effects(WindowEffectsConfig {
+            effects: vec![Effect::Acrylic],
+            state: None,
+            radius: None,
+            color: None, // Optional: affects blur & acrylic on Windows 10 v1903+
+        })
         .build()
         .and_then(|w| {
             let _ = w.show();
@@ -322,28 +317,25 @@ impl NotchWatcher {
     pub fn start(window: tauri::WebviewWindow) {
         std::thread::spawn(move || {
             let enigo = Enigo::new();
-            let app = window.app_handle();
+            // Try to get the screen width from the window's monitor
+            let screen_width = window
+                .current_monitor()
+                .ok()
+                .flatten()
+                .map(|m| m.size().width as i32)
+                .unwrap_or(1920);
+            let notch_x = (screen_width - NOTCH_WIDTH) / 2;
+            let notch_y = 0;
             loop {
-                // Get current window position and monitor info in each iteration
-                // This ensures we always have the correct monitor info even if window moved
-                let (screen_width, monitor_x) = if let Ok(current_pos) = window.outer_position() {
-                    get_monitor_for_position(&app, &current_pos)
-                        .map(|m| (m.size().width as i32, m.position().x))
-                        .unwrap_or((1920, 0))
-                } else {
-                    (1920, 0)
-                };
-                let notch_x = monitor_x + (screen_width - NOTCH_WIDTH) / 2;
-                let notch_y = 0;
-
-                let (mouse_x, mouse_y) = enigo.mouse_location();
+                let (x, y) = enigo.mouse_location();
                 // Check if mouse is inside the centered notch area
-                if mouse_x >= notch_x
-                    && mouse_x < notch_x + NOTCH_WIDTH
-                    && mouse_y >= notch_y
-                    && mouse_y < notch_y + NOTCH_HEIGHT
+                if x >= notch_x
+                    && x < notch_x + NOTCH_WIDTH
+                    && y >= notch_y
+                    && y < notch_y + NOTCH_HEIGHT
                 {
                     let _ = window.set_ignore_cursor_events(false);
+                    // apply_acrylic(&window, Some((18, 18, 18, 125)));
                     // println!("Mouse hovered over notch");
                     let _ = window.emit("notch-hover", ());
                 }
@@ -362,6 +354,7 @@ pub fn start_notch_watcher(app: AppHandle) {
 pub fn enable_notch(app: AppHandle) {
     if let Some(window) = app.get_webview_window("overlay") {
         // println!("Enabling notch");
+        clear_acrylic(&window);
         let _ = window.set_ignore_cursor_events(true);
     }
 }
@@ -408,6 +401,12 @@ pub fn show_magic_dot(app: AppHandle) {
         .shadow(false)
         .always_on_top(true)
         .inner_size(500.0, 60.0)
+        .effects(WindowEffectsConfig {
+            effects: vec![Effect::Acrylic],
+            state: None,
+            radius: None,
+            color: None, // Optional: affects blur & acrylic on Windows 10 v1903+
+        })
         .build()
         .and_then(|w| {
             let _ = w.show();
