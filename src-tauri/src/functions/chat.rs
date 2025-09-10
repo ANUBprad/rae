@@ -8,7 +8,7 @@ static AUTO_SHOW_ON_SELECTION: AtomicBool = AtomicBool::new(false);
 static SELECTION_WATCHER_RUNNING: AtomicBool = AtomicBool::new(false);
 static RAE_WATCHER_ENABLED: AtomicBool = AtomicBool::new(false);
 static RAE_WATCHER_RUNNING: AtomicBool = AtomicBool::new(false);
-static NOTCH_WINDOW_DISPLAY_ENABLED: AtomicBool = AtomicBool::new(true);
+static NOTCH_WINDOW_DISPLAY_ENABLED: AtomicBool = AtomicBool::new(false);
 
 use winapi::um::winuser::{
     GetAsyncKeyState, GetClipboardSequenceNumber, IsClipboardFormatAvailable, CF_UNICODETEXT,

@@ -201,7 +201,7 @@ const Overlay = () => {
   }, [showChat]);
 
   const [chatOpen, setChatOpen] = useState(false);
-  const [notchWindowDisplayEnabled, setNotchWindowDisplayEnabled] = useState(true);
+  const [notchWindowDisplayEnabled, setNotchWindowDisplayEnabled] = useState(false);
 
   // Load window display preference on mount
   useEffect(() => {
