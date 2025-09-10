@@ -3,6 +3,37 @@
 use std::{thread, time::Duration};
 use tauri::WebviewWindow;
 
+/// Gets the monitor that contains the window based on its position.
+/// This is more reliable than current_monitor() in multi-monitor setups.
+pub fn get_monitor_by_window_position(window: &WebviewWindow, app: &tauri::AppHandle) -> Option<tauri::Monitor> {
+    let window_pos = window.outer_position().ok()?;
+    let window_size = window.outer_size().ok()?;
+
+    // Get all available monitors
+    let monitors = app.available_monitors().ok()?;
+
+    // Calculate window center point
+    let window_center_x = window_pos.x + (window_size.width as i32 / 2);
+    let window_center_y = window_pos.y + (window_size.height as i32 / 2);
+
+    // Find the monitor that contains the window center
+    for monitor in monitors {
+        let monitor_pos = monitor.position();
+        let monitor_size = monitor.size();
+
+        // Check if window center is within monitor bounds
+        if window_center_x >= monitor_pos.x
+            && window_center_x < monitor_pos.x + monitor_size.width as i32
+            && window_center_y >= monitor_pos.y
+            && window_center_y < monitor_pos.y + monitor_size.height as i32
+        {
+            return Some(monitor.clone());
+        }
+    }
+    // Fallback: return primary monitor if no monitor contains the window
+    app.primary_monitor().ok().flatten()
+}
+
 /// Animates a window's size from a starting to an ending size over a series of steps.
 pub fn smooth_resize(
     window: &WebviewWindow,
