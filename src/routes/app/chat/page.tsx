@@ -14,6 +14,7 @@ import {
   GenerateWithWebSearch,
   GenerateWithSupermemory,
   getConvoMessage,
+  BASE_URL,
 } from "@/api/chat";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -26,7 +27,7 @@ import Chat from "./components/Chat";
 const MODELS = [
   { label: "OpenAi", value: "gpt-4o-mini" },
   { label: "OpenAi", value: "gpt-4o" },
-  { label: "Gemini", value: "gemini-2.5-flash" },
+  // { label: "Gemini", value: "gemini-2.5-flash" },
 ];
 
 export default function ChatWindow() {
@@ -91,52 +92,181 @@ export default function ChatWindow() {
   // Chat input logic is now handled by ChatInput component
 
   // Handler for ChatInput
+  const [streamingMsg, setStreamingMsg] = useState("");
+  const [currResponse, setCurrResponse] = useState("");
+
+  const handleStreamAIResponse = async (
+    email: string,
+    message: string,
+    newConvo: boolean,
+    conversationId: number,
+    provider: string,
+    modelName: string,
+    image: string,
+    tool: number,
+    newMessages: any[]
+  ) => {
+    setStreamingMsg("");
+    const response = await fetch(`${BASE_URL}/generate/msg`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        message,
+        newConvo,
+        conversationId,
+        provider,
+        modelName,
+        image,
+        tool,
+      }),
+    });
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error("ReadableStream not supported in this environment.");
+    }
+    const decoder = new TextDecoder();
+    let fullText = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      chunk.split("\n\n").forEach((event) => {
+        if (!event.trim()) return;
+        const dataLine = event.replace(/^data:\s*/, "");
+        try {
+          const data = JSON.parse(dataLine);
+          if (data.type === "chunk") {
+            fullText += data.content;
+            setStreamingMsg((prev) => prev + data.content);
+          } else if (data.type == "title") {
+            if (currentConvoId === -1) {
+              setTitleById(-1, data.title);
+              updateConvoId(-1, data.conversationId);
+              setCurrentConvo(data.conversationId);
+            }
+          } else if (data.type === "done") {
+            setStreamingMsg("");
+            setCurrResponse(fullText);
+            let updatedMessages = [
+              ...newMessages,
+              { sender: "ai", text: fullText, image: "" },
+            ];
+            setMessages(updatedMessages);
+            updateConvoMessages(currentConvoId === -1 ? data.conversationId : currentConvoId, updatedMessages);
+            return {
+              success: true,
+              data: fullText,
+            };
+          }
+        } catch {
+          fullText += dataLine;
+          setStreamingMsg((prev) => prev + dataLine);
+        }
+      });
+    }
+
+    setStreamingMsg("");
+    setCurrResponse(fullText);
+    let updatedMessages = [
+      ...newMessages,
+      { sender: "ai", text: fullText, image: "" },
+    ];
+    setMessages(updatedMessages);
+    updateConvoMessages(currentConvoId, updatedMessages);
+    return {
+      success: true,
+      data: fullText,
+    };
+  };
+
   const handleSend = async (userMsg: string, manualImage?: string) => {
-    // This is the same as the old handleAIResponse logic
     let newMessages = [
       ...messages,
       {
         sender: "user" as const,
-        text: userMsg, // Normal message without prefix
+        text: userMsg,
         image: "",
       },
     ];
     setMessages(newMessages);
     updateConvoMessages(currentConvoId, newMessages);
-
-    // Set AI thinking state to true
     setIsAIThinking(true);
 
     try {
-      // Use manual image if provided, otherwise capture window screenshot
       let imageToSend = manualImage || "";
-      if (!manualImage) {
-        try {
-          imageToSend = (await invoke("capture_window_screenshot")) as string;
-          console.log(
-            "Screenshot captured for normal chat, length:",
-            imageToSend.length
-          );
-          console.log(
-            "Normal chat screenshot starts with:",
-            imageToSend.substring(0, 50)
-          );
-        } catch (screenshotError) {
-          console.error(
-            "Failed to capture screenshot for normal chat:",
-            screenshotError
-          );
-          // Continue without screenshot if capture fails
+      if (!imageToSend && selectedTool === 0) {
+        // Streaming logic for normal chat (no image, no tool)
+        await handleStreamAIResponse(
+          email,
+          userMsg,
+          currentConvoId === -1,
+          currentConvoId,
+          currentModel.label,
+          currentModel.value,
+          "",
+          0,
+          newMessages
+        );
+      } else if (selectedTool === 1) {
+        const ai_res = await GenerateWithWebSearch({
+          email: email,
+          message: userMsg,
+          newConvo: currentConvoId == -1 ? true : false,
+          conversationId: currentConvoId,
+          provider: currentModel.label,
+          modelName: currentModel.value,
+          image: imageToSend,
+        });
+        let updatedMessages = [
+          ...newMessages,
+          {
+            sender: "ai" as const,
+            text: ai_res.aiResponse,
+            image: "",
+          },
+        ];
+        setMessages(updatedMessages);
+        updateConvoMessages(currentConvoId, updatedMessages);
+        if (currentConvoId === -1) {
+          setTitleById(-1, ai_res.title);
+          updateConvoId(-1, ai_res.conversationId);
+          updateConvoMessages(ai_res.conversationId, updatedMessages);
+          setCurrentConvo(ai_res.conversationId);
+        }
+      } else if (selectedTool === 2) {
+        const ai_res = await GenerateWithSupermemory({
+          email: email,
+          message: userMsg,
+          newConvo: currentConvoId == -1 ? true : false,
+          conversationId: currentConvoId,
+          provider: currentModel.label,
+          modelName: currentModel.value,
+          image: imageToSend,
+        });
+        let updatedMessages = [
+          ...newMessages,
+          {
+            sender: "ai" as const,
+            text: ai_res.aiResponse,
+            image: "",
+          },
+        ];
+        setMessages(updatedMessages);
+        updateConvoMessages(currentConvoId, updatedMessages);
+        if (currentConvoId === -1) {
+          setTitleById(-1, ai_res.title);
+          updateConvoId(-1, ai_res.conversationId);
+          updateConvoMessages(ai_res.conversationId, updatedMessages);
+          setCurrentConvo(ai_res.conversationId);
         }
       } else {
-        console.log("Using manually pasted image, length:", manualImage.length);
-        console.log("Manual image starts with:", manualImage.substring(0, 50));
-      }
-
-      // Use selected tool if any
-      let ai_res;
-      if (selectedTool === 1) {
-        ai_res = await GenerateWithWebSearch({
+        // Fallback: normal Generate for image
+        const ai_res = await Generate({
           email: email,
           message: userMsg,
           newConvo: currentConvoId == -1 ? true : false,
@@ -145,45 +275,22 @@ export default function ChatWindow() {
           modelName: currentModel.value,
           image: imageToSend,
         });
-      } else if (selectedTool === 2) {
-        ai_res = await GenerateWithSupermemory({
-          email: email,
-          message: userMsg,
-          newConvo: currentConvoId == -1 ? true : false,
-          conversationId: currentConvoId,
-          provider: currentModel.label,
-          modelName: currentModel.value,
-          image: imageToSend,
-        });
-      } else {
-        ai_res = await Generate({
-          email: email,
-          message: userMsg,
-          newConvo: currentConvoId == -1 ? true : false,
-          conversationId: currentConvoId,
-          provider: currentModel.label,
-          modelName: currentModel.value,
-          image: imageToSend,
-        });
-      }
-
-      let updatedMessages = [
-        ...newMessages,
-        {
-          sender: "ai" as const,
-          text: ai_res.aiResponse,
-          image: "",
-        },
-      ];
-      setMessages(updatedMessages);
-
-      if (currentConvoId === -1) {
-        setTitleById(-1, ai_res.title);
-        updateConvoId(-1, ai_res.conversationId);
-        updateConvoMessages(ai_res.conversationId, updatedMessages);
-        setCurrentConvo(ai_res.conversationId);
-      } else {
+        let updatedMessages = [
+          ...newMessages,
+          {
+            sender: "ai" as const,
+            text: ai_res.aiResponse,
+            image: "",
+          },
+        ];
+        setMessages(updatedMessages);
         updateConvoMessages(currentConvoId, updatedMessages);
+        if (currentConvoId === -1) {
+          setTitleById(-1, ai_res.title);
+          updateConvoId(-1, ai_res.conversationId);
+          updateConvoMessages(ai_res.conversationId, updatedMessages);
+          setCurrentConvo(ai_res.conversationId);
+        }
       }
     } catch (error) {
       console.error("Error getting AI response:", error);
@@ -198,10 +305,9 @@ export default function ChatWindow() {
       setMessages(errorMessages);
       updateConvoMessages(currentConvoId, errorMessages);
     } finally {
-      // Always clear the thinking state
       setIsAIThinking(false);
-      // Reset tool selection after sending
       setSelectedTool(0);
+      setStreamingMsg("");
     }
   };
 
@@ -292,6 +398,7 @@ export default function ChatWindow() {
               </div>
             )} */}
 
+
             {messages.map((msg, idx) => (
               <div
                 key={idx}
@@ -357,6 +464,29 @@ export default function ChatWindow() {
                 )}
               </div>
             ))}
+
+            {/* Streaming AI message (if any) */}
+            {streamingMsg && (
+              <div className="px-4 py-2 rounded-lg text-sm bg-zinc-200 dark:bg-[#333333] dark:text-white self-start text-left w-fit max-w-[450px]">
+                <div className="prose prose-sm max-w-fit prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 prose-pre:hidden prose-code:hidden">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkBreaks]}
+                    components={{
+                      code: ({ className, children, ...props }: any) => {
+                        const inline = props.inline;
+                        return (
+                          <CodeBlock className={className} inline={inline} {...props}>
+                            {String(children).replace(/\n$/, "")}
+                          </CodeBlock>
+                        );
+                      },
+                    }}
+                  >
+                    {streamingMsg}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            )}
 
             {/* AI Thinking Animation - Simple Pulsing Dot */}
             <AnimatePresence mode="popLayout">

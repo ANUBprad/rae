@@ -291,14 +291,14 @@ function App() {
       "theme",
       ({ payload }: { payload: { darkTheme: boolean } }) => {
         console.log("Got theme update", payload);
-        const root = document.documentElement;
-        if (payload.darkTheme) {
-          root.classList.add("dark");
-          root.classList.remove("light");
-        } else {
-          root.classList.remove("dark");
-          root.classList.add("light");
-        }
+        // const root = document.documentElement;
+        // if (payload.darkTheme) {
+        //   root.classList.add("dark");
+        //   root.classList.remove("light");
+        // } else {
+        //   root.classList.remove("dark");
+        //   root.classList.add("light");
+        // }
       },
     );
 

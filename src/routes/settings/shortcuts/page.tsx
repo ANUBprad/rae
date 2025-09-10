@@ -1,4 +1,5 @@
 import { shortcuts } from "@/constants/shortcuts";
+import { LightbulbIcon } from "@phosphor-icons/react";
 import { invoke } from "@tauri-apps/api/core";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
@@ -29,6 +30,7 @@ export default function ShortcutsPage(): JSX.Element {
         <Card>
           <SectionHeader title={"Shortcuts"} />
           <div className="flex flex-col divide-y divide-border">
+            <div className="px-5 py-4 flex gap-4 items-center text-surface"><LightbulbIcon weight="fill" className="text-xl" />@rae brings the overlay to you</div>
             {shortcuts.map((shortcut) => {
               return (
                 <div className="divide-y divide-zinc-200">
@@ -40,6 +42,7 @@ export default function ShortcutsPage(): JSX.Element {
                 </div>
               );
             })}
+            
           </div>
         </Card>
         {/* Automation toggles moved to Preferences page */}

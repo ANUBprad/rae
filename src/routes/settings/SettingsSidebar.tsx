@@ -61,7 +61,7 @@ const SettingsSidebar = () => {
   const location = useLocation()
   return (
     <div className="h-full flex-col border-r border-border flex w-[200px] shrink-0 bg-background p-2 gap-1">
-      <div className="relative h-[44px] dark:bg-zinc-950 focus-within:dark:bg-zinc-950 rounded-lg transition-all duration-100 border-2  dark:border-zinc-900 focus-within:dark:border-zinc-800">
+      {/* <div className="relative h-[44px] dark:bg-zinc-950 focus-within:dark:bg-zinc-950 rounded-lg transition-all duration-100 border-2  dark:border-zinc-900 focus-within:dark:border-zinc-800">
               <input
                 type="text"
                 
@@ -73,7 +73,7 @@ const SettingsSidebar = () => {
               />
 
           
-            </div>
+            </div> */}
       <SidebarButton
       active={location.pathname == "/app/settings/preferences"}
         onClick={() => navigate("/app/settings/preferences")}

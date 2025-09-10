@@ -9,7 +9,7 @@ import { ArrowElbowDownLeftIcon } from "@phosphor-icons/react";
 const defaultModels = [
   { label: "OpenAi", value: "gpt-4o-mini" },
   { label: "OpenAi", value: "gpt-4o" },
-  { label: "Gemini", value: "gemini-2.5-flash" },
+  // { label: "Gemini", value: "gemini-2.5-flash" },
 ];
 
 interface ChatProps {
@@ -77,7 +77,7 @@ const Chat: React.FC<ChatProps> = ({
       setMessage(initialMessage);
       if (chatInputRef.current) {
         chatInputRef.current.value = initialMessage;
-        autosize.update(chatInputRef.current);
+        // autosize.update(chatInputRef.current);
       }
     }
   }, [initialMessage]);
@@ -185,7 +185,7 @@ const Chat: React.FC<ChatProps> = ({
                 <div className="bg-zinc-900/50 w-full h-fit border flex flex-col transition-all rounded-lg border-border group focus-within:border-foreground/20 ">
                   <div className="relative">
                     <textarea
-                      onChange={() => handleInputChange(chatInputRef.current?.value ?? "")}
+                      onChange={(e) => setMessage(e.target.value)}
                       onPaste={handlePaste}
                       ref={chatInputRef}
                       placeholder={attachedImage ? "Describe what you want to know about this image..." : "Enter your message or paste a screenshot"}
@@ -351,7 +351,7 @@ const Chat: React.FC<ChatProps> = ({
                     )}
                   </AnimatePresence>
                 </div>
-                <div className=" text-sm shrink-0 w-full flex h-fit p-1 overflow-hidden">
+                <div className=" text-sm shrink-0 w-full flex h-fit p-1 ">
                   <div className="h-full w-fit relative">
                     <AnimatePresence>
                       {expanded && (
@@ -359,7 +359,7 @@ const Chat: React.FC<ChatProps> = ({
                           initial={{ height: "0px" }}
                           animate={{ height: modelsList.length * 40 + "px" }}
                           exit={{ height: "0px" }}
-                          className="absolute bottom-full rounded-t-lg overflow-hidden   backdrop-blur-3xl bg-foreground/5 h-fit w-full flex flex-col"
+                          className="absolute z-[10000] bottom-full rounded-t-lg overflow-hidden   backdrop-blur-3xl bg-foreground/5 h-fit w-full flex flex-col"
                         >
                           {modelsList.map((m) => (
                             <button
