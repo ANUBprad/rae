@@ -345,7 +345,7 @@ export default function ChatWindow() {
                   msg.text
                 )}
 
-                {/* ⬇️ Show image if exists */}
+                {/* Show image if exists */}
                 {msg.image && (
                   <div className="mt-2">
                     <img

@@ -21,7 +21,7 @@ export const Generate = async ({
     let res;
 
     if (image || tool) {
-      // ✅ Normal axios request
+      // Normal axios request
       res = await axios.post(`${BASE_URL}/generate/msg`, {
         email,
         message,
