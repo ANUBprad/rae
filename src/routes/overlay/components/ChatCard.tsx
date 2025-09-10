@@ -688,7 +688,7 @@ export const ChatView = ({
               className={`p-2 rounded-lg text-sm ${
                 msg.sender === "user"
                   ? "bg-foreground dark:bg-zinc-950 dark:text-white font-medium  self-end text-right ml-auto w-fit max-w-[70%]"
-                  : "bg-zinc-200 dark:bg-zinc-950 dark:text-white  self-start text-left w-fit max-w-[300px]"
+                  : "bg-zinc-200 dark:bg-zinc-950 dark:text-white  self-start text-left w-fit max-w-[85%]"
               }`}
             >
               {msg.sender === "ai" ? (
@@ -743,7 +743,7 @@ export const ChatView = ({
 
           {/* Streaming AI message (if any) */}
           {streamingMsg && (
-            <div className="p-2 rounded-lg text-sm bg-zinc-200 dark:bg-zinc-950 dark:text-white self-start text-left w-fit max-w-[300px]">
+            <div className="p-2 rounded-lg text-sm bg-zinc-200 dark:bg-zinc-950 dark:text-white self-start text-left w-fit max-w-[85%]">
               <div className="prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 prose-pre:hidden prose-code:hidden">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm, remarkBreaks]}
