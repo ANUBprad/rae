@@ -41,7 +41,7 @@ const Name: React.FC<NameProps> = ({ onNext }) => {
   };
 
   return (
-    <div className="drag min-h-screen flex rounded-md items-center justify-center bg-white">
+    <div className="drag min-h-screen flex rounded-md items-center justify-center ">
       <div className="text-center p-8 w-full max-w-sm">
         <h1 className="text-2xl !font-instrument-sans tracking-tighter mb-6">
           What should we call you?
@@ -52,7 +52,7 @@ const Name: React.FC<NameProps> = ({ onNext }) => {
           placeholder="Your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="no-drag w-full mb-2 px-4 font-medium py-2 border rounded-md bg-gray-50 focus:outline-none"
+          className="no-drag w-full px-4 py-3 border-2 dark:border-zinc-600 focus:dark:border-surface/80 rounded-lg  text-sm outline-none mb-2"
         />
         {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
         <Button

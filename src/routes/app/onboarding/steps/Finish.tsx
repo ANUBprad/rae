@@ -16,8 +16,8 @@ const FinishStep: React.FC<FinishProps> = ({ onNext }) => {
     onNext("fetchInfo");
   };
   return (
-    <div className="drag rounded-md h-screen w-screen flex items-center justify-center bg-white">
-      <div className="bg-white rounded-xl p-10 w-full max-w-md text-center">
+    <div className="drag rounded-md h-screen w-screen flex items-center justify-center ">
+      <div className=" rounded-xl p-10 w-full max-w-md text-center">
         <h2 className="text-2xl font-semibold  mb-2">
           You're all set!
         </h2>

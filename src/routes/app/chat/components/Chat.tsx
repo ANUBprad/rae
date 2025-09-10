@@ -174,7 +174,7 @@ const Chat: React.FC<ChatProps> = ({
         {!init && (
           <>
             <motion.div animate={{ opacity: 1 }} className="text-3xl text-zinc-200 font-semibold">
-              Welcome Back, {name.split(" ")[0]}
+              Welcome Back
             </motion.div>
             <motion.div
               initial={{ width: "70%", height: "100px" }}

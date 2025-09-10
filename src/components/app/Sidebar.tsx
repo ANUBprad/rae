@@ -8,6 +8,8 @@ import {
   NotePencilIcon,
   PencilIcon,
   CaretDoubleLeftIcon,
+  SignOut,
+  SignOutIcon,
 } from "@phosphor-icons/react";
 import { MAGIC_DOT_TOGGLE_COMBO } from "@/constants/shortcuts";
 import { useUserStore } from "@/store/userStore";
@@ -197,8 +199,8 @@ const Sidebar = () => {
         </motion.div>
         </div>
       </div>
-      <div className="mt-auto flex flex-col gap-1 px-2">
-        <SidebarButton
+      <div className="mt-auto flex flex-col gap-1 px-2 pb-2">
+        {/* <SidebarButton
           active={location.pathname == "/app/brain"}
           logo={<BrainIcon className=" " />}
           expanded={expanded}
@@ -208,7 +210,7 @@ const Sidebar = () => {
           }}
         >
           Memory
-        </SidebarButton>
+        </SidebarButton> */}
         <SidebarButton
           active={location.pathname.includes("/app/settings")}
           logo={
@@ -232,8 +234,32 @@ const Sidebar = () => {
         >
           Settings
         </SidebarButton>
+        <SidebarButton
+          // active={location.pathname.includes("/app/settings")}
+          logo={
+            <motion.div
+              variants={{
+                hover: {
+                  // rotate: "45deg",
+                },
+              }}
+              transition={{ duration: 0.2, ease: "easeInOut", type: "tween" }}
+              className=""
+            >
+              <SignOutIcon  className="" />
+            </motion.div>
+          }
+          expanded={expanded}
+          onClick={() => {
+            setExpanded(false)
+            handlelogout()
+            // navigate("/app/settings/preferences");
+          }}
+        >
+          Log Out
+        </SidebarButton>
       </div>
-      <motion.div
+      {/* <motion.div
         animate={{ height: expanded ? "70px" : "60px" }}
         className="w-full p-2"
       >
@@ -248,7 +274,7 @@ const Sidebar = () => {
             </div>
           </motion.div>
         </button>
-      </motion.div>
+      </motion.div> */}
     </motion.div>
   );
 };

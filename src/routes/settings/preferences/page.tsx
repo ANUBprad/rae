@@ -147,13 +147,13 @@ const Preferences = () => {
         <Card>
           <SectionHeader title="Appearance" />
           <div className="divide-y divide-border">
-            <ToggleRow
+            {/* <ToggleRow
               label="Dark theme"
               enabled={darkTheme}
               onToggle={async (next) => {
                 setDarkTheme(next);
               }}
-            />
+            /> */}
             <ToggleRow
               label="Gradient in notch"
               enabled={gradient}
