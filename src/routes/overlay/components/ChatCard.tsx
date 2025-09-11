@@ -5,7 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { emit } from "@tauri-apps/api/event";
+import { emit, listen } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { LogicalSize } from "@tauri-apps/api/dpi";
 import { useUserStore } from "@/store/userStore";
@@ -53,11 +53,11 @@ import {
   SlidersHorizontalIcon,
   SlidersIcon,
   TrashIcon,
+  EyeSlashIcon,
 } from "@phosphor-icons/react";
 const MODELS = [
   { label: "OpenAi", value: "gpt-4o-mini" },
   { label: "OpenAi", value: "gpt-4o" },
-  { label: "gemini", value: "gemini-2.5-flash" },
 ];
 
 interface ChatViewProps {
@@ -114,7 +114,7 @@ const Option = ({
 const performSmoothResize = async (
   targetWidth: number,
   targetHeight: number,
-  duration: number = 160
+  duration: number = 160,
 ) => {
   const win = getCurrentWebviewWindow();
   const currentSize = await win.innerSize();
@@ -133,10 +133,10 @@ const performSmoothResize = async (
       const easedProgress = easeOutCubic(progress);
 
       const currentWidth = Math.round(
-        startWidth + (targetWidth - startWidth) * easedProgress
+        startWidth + (targetWidth - startWidth) * easedProgress,
       );
       const currentHeight = Math.round(
-        startHeight + (targetHeight - startHeight) * easedProgress
+        startHeight + (targetHeight - startHeight) * easedProgress,
       );
 
       await win.setSize(new LogicalSize(currentWidth, currentHeight));
@@ -196,10 +196,27 @@ export const ChatView = ({
   const [selectedTool, setSelectedTool] = useState<0 | 1 | 2>(0); // 0=none, 1=web search, 2=supermemory
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [stealthMode, setStealthMode] = useState<boolean>(false);
 
   // Refs for scrolling
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Load stealth mode state on component mount
+  useEffect(() => {
+    invoke<boolean>("get_stealth_mode_enabled")
+      .then((v) => setStealthMode(!!v))
+      .catch(() => {});
+
+    // Listen for stealth mode changes from other components
+    const unlisten = listen("stealth_mode_changed", (event: any) => {
+      setStealthMode(event.payload.enabled);
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
 
   const handleStreamAIResponse = async (
     email,
@@ -211,7 +228,7 @@ export const ChatView = ({
     modelName,
     image,
     tool,
-    newMessages
+    newMessages,
   ) => {
     // Streaming block
     setStreamingMsg("");
@@ -300,7 +317,7 @@ export const ChatView = ({
       manualImageLength: manualImage?.length || 0,
       attachedImageLength: attachedImage?.length || 0,
       windowScreenshotLength: windowScreenshot?.length || 0,
-      finalImageLength: finalImage.length
+      finalImageLength: finalImage.length,
     });
 
     const newMessages = [
@@ -331,7 +348,7 @@ export const ChatView = ({
           currentModel.value,
           "",
           selectedTool,
-          newMessages
+          newMessages,
         );
       } else {
         ai_res = await Generate({
@@ -381,7 +398,7 @@ export const ChatView = ({
       console.log("📨 ChatCard: Received initial message:", {
         message: initialMessage,
         hasImage: !!initialAttachedImage,
-        imageLength: initialAttachedImage?.length || 0
+        imageLength: initialAttachedImage?.length || 0,
       });
 
       if (initialAttachedImage) {
@@ -665,7 +682,7 @@ export const ChatView = ({
             </OverlayButton>
 
             {/* <OverlayButton
-              
+
               onClick={onClose}
               title="Open in main window"
             >
@@ -885,6 +902,31 @@ export const ChatView = ({
                           {/* <BrainIcon className="text-lg" /> */}
                           Super Memory
                         </Option>
+                        <Option
+                          active={stealthMode}
+                          onClick={async () => {
+                            const newStealthMode = !stealthMode;
+                            setStealthMode(newStealthMode);
+                            try {
+                              await invoke("set_stealth_mode_enabled", {
+                                enabled: newStealthMode,
+                              });
+                              emit("stealth_mode_changed", {
+                                enabled: newStealthMode,
+                              });
+                            } catch (error) {
+                              console.error(
+                                "Failed to toggle stealth mode:",
+                                error,
+                              );
+                              // Revert state if backend call fails
+                              setStealthMode(stealthMode);
+                            }
+                          }}
+                          icon={<EyeSlashIcon className="text-lg" />}
+                        >
+                          Stealth Mode
+                        </Option>
                         <button className="flex gap-2 text-sm w-full transition-colors duration-100 px-2 py-1 dark:text-zinc-400 font-medium hover:dark:text-white hover:dark:bg-zinc-900 rounded-md items-center">
                           <GearSixIcon className="text-lg" />
                           More Settings
@@ -952,7 +994,9 @@ export const ChatView = ({
                           }}
                           className="absolute -top-0.5 -right-0.5 bg-red-500 hover:bg-red-600 text-white rounded-full w-3 h-3 grid place-items-center text-[8px] font-bold opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-sm leading-none"
                         >
-                          <span className="transform translate-y-[-0.5px]">×</span>
+                          <span className="transform translate-y-[-0.5px]">
+                            ×
+                          </span>
                         </button>
                       </div>
                     </motion.div>

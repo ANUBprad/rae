@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useDarkThemeStore } from "../../../store/darkThemeStore";
-import { emit } from "@tauri-apps/api/event";
+import { emit, listen } from "@tauri-apps/api/event";
 
 function SectionHeader({ title }: { title: string }) {
   return (
@@ -74,6 +74,15 @@ const Preferences = () => {
     invoke<boolean>("get_stealth_mode_enabled")
       .then((v) => setStealthMode(!!v))
       .catch(() => {});
+
+    // Listen for stealth mode changes from other components
+    const unlisten = listen("stealth_mode_changed", (event: any) => {
+      setStealthMode(event.payload.enabled);
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
   }, []);
 
   const { darkTheme, setDarkTheme, initializeTheme } = useDarkThemeStore();
@@ -137,6 +146,7 @@ const Preferences = () => {
                   await invoke("set_stealth_mode_enabled", {
                     enabled: next,
                   });
+                  emit("stealth_mode_changed", { enabled: next });
                 } catch (error) {
                   console.error("Failed to toggle stealth mode:", error);
                 }
