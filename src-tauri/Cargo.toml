@@ -14,7 +14,7 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 # ✅ only keep `tray-icon` feature, remove `menu` (it doesn't exist in Tauri v2)
-tauri = { version = "2", features = ["tray-icon"] }
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
 
 tauri-plugin-opener = "2"
 tauri-plugin-global-shortcut = "2"

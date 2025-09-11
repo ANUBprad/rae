@@ -10,11 +10,17 @@ use tauri::Manager;
 use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use tauri::menu::{Menu, MenuItemBuilder};
 use tauri::tray::{TrayIconBuilder, TrayIconEvent, MouseButton};
+use tauri::image::Image;
 use tauri::State;
 use std::sync::Mutex;
+use image as img_crate;
 
 struct TrayState(Mutex<bool>);
 
+fn load_tray_icon() -> Image<'static> {
+    let bytes = include_bytes!("../icons/32x32.png");
+    Image::from_bytes(bytes).expect("invalid tray icon image")
+}
 #[tauri::command]
 fn hide_main_to_tray(app: tauri::AppHandle, tray_state: State<TrayState>) {
     // Ensure tray exists
@@ -26,6 +32,7 @@ fn hide_main_to_tray(app: tauri::AppHandle, tray_state: State<TrayState>) {
             ) {
                 if let Ok(menu) = Menu::with_items(&app, &[&show_item, &quit_item]) {
                     let _ = TrayIconBuilder::new()
+                        .icon(load_tray_icon())
                         .menu(&menu)
                         .on_tray_icon_event(|tray, event: TrayIconEvent| {
                             if let TrayIconEvent::Click { button: MouseButton::Left, .. } = event {
@@ -77,6 +84,7 @@ fn create_tray(app: tauri::AppHandle, tray_state: State<TrayState>) {
         ) {
             if let Ok(menu) = Menu::with_items(&app, &[&show_item, &quit_item]) {
                 let _ = TrayIconBuilder::new()
+                    .icon(load_tray_icon())
                     .menu(&menu)
                     .on_tray_icon_event(|tray, event: TrayIconEvent| {
                         match event {
@@ -140,6 +148,7 @@ fn main() {
                                         ) {
                                             if let Ok(menu) = Menu::with_items(&app_handle_for_tray, &[&show_item, &quit_item]) {
                                                 let _ = TrayIconBuilder::new()
+                                                    .icon(load_tray_icon())
                                                     .menu(&menu)
                                                     .on_tray_icon_event(|tray, event: TrayIconEvent| {
                                                         if let TrayIconEvent::Click { button: MouseButton::Left, .. } = event {
