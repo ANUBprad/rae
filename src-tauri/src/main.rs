@@ -69,15 +69,59 @@ fn main() {
             let app_handle = app.handle().clone();
             app.manage(TrayState(Mutex::new(false)));
 
-            // Handle main window close event to also close overlay
+            // Intercept main window close and hide to tray instead
             if let Some(main_window) = app.get_webview_window("main") {
                 let app_handle_clone = app_handle.clone();
+                let app_handle_for_tray = app.handle().clone();
                 main_window.on_window_event(move |event| {
-                    if let tauri::WindowEvent::CloseRequested { .. } = event {
-                        println!("Main window close requested, closing overlay window...");
-                        // Close overlay window when main window is closed
-                        if let Some(overlay_window) = app_handle_clone.get_webview_window("overlay") {
-                            let _ = overlay_window.close();
+                    if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                        // Prevent app exit; show tray and hide main window
+                        api.prevent_close();
+                        // Create tray if not created
+                        if let Some(win) = app_handle_for_tray.get_webview_window("main") {
+                            // Try to create tray
+                            let _ = app_handle_for_tray.try_state::<TrayState>().map(|state| {
+                                if let Ok(mut created) = state.0.lock() {
+                                    if !*created {
+                                        // Build menu
+                                        if let (Ok(show_item), Ok(quit_item)) = (
+                                            MenuItemBuilder::with_id("show_rae", "Show Rae").build(&app_handle_for_tray),
+                                            MenuItemBuilder::with_id("quit_rae", "Quit").build(&app_handle_for_tray),
+                                        ) {
+                                            if let Ok(menu) = Menu::with_items(&app_handle_for_tray, &[&show_item, &quit_item]) {
+                                                let _ = TrayIconBuilder::new()
+                                                    .menu(&menu)
+                                                    .on_tray_icon_event(|tray, event: TrayIconEvent| {
+                                                        if let TrayIconEvent::Click { button: MouseButton::Left, .. } = event {
+                                                            let app = tray.app_handle();
+                                                            if let Some(win) = app.get_webview_window("main") {
+                                                                let _ = win.show();
+                                                                let _ = win.set_focus();
+                                                            }
+                                                        }
+                                                    })
+                                                    .on_menu_event(|app, event| {
+                                                        match event.id().as_ref() {
+                                                            "show_rae" => {
+                                                                if let Some(win) = app.get_webview_window("main") {
+                                                                    let _ = win.show();
+                                                                    let _ = win.set_focus();
+                                                                }
+                                                            }
+                                                            "quit_rae" => {
+                                                                std::process::exit(0);
+                                                            }
+                                                            _ => {}
+                                                        }
+                                                    })
+                                                    .build(&app_handle_for_tray);
+                                                *created = true;
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                            let _ = win.hide();
                         }
                     }
                 });
