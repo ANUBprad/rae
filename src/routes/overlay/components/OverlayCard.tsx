@@ -95,6 +95,17 @@ const Overlay = () => {
   const [showGradient, setShowGradient] = useState<boolean>(
     localStorage.getItem("gradient") === "true"
   );
+  // Respect preference to stop analyzing after send
+  useEffect(() => {
+    const unlisten = listen("overlay_request_stop_analyze", () => {
+      // Turn off active capture/analysis toggle immediately
+      setIsActive(false);
+      localStorage.setItem("overlay_active", "false");
+    });
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
 
   // State to control and pass data to the chat view
   const [showChat, setShowChat] = useState(false);

@@ -194,6 +194,11 @@ export const ChatView = ({
   // Removed typing animation logic
   const [isInputTyping, setIsInputTyping] = useState(false);
   const [selectedTool, setSelectedTool] = useState<0 | 1 | 2>(0); // 0=none, 1=web search, 2=supermemory
+  const [resetToolAfterSend, setResetToolAfterSend] = useState<boolean>(
+    localStorage.getItem("overlay_reset_tool_after_send") === "false"
+      ? false
+      : true,
+  );
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [stealthMode, setStealthMode] = useState<boolean>(false);
@@ -213,6 +218,19 @@ export const ChatView = ({
       setStealthMode(event.payload.enabled);
     });
 
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
+
+  // Listen for preference changes from settings
+  useEffect(() => {
+    const unlisten = listen(
+      "overlay_reset_tool_after_send_changed",
+      (event: any) => {
+        setResetToolAfterSend(!!event.payload.enabled);
+      },
+    );
     return () => {
       unlisten.then((fn) => fn());
     };
@@ -593,7 +611,13 @@ export const ChatView = ({
       handleAIResponse(userMsg, attachedImage || undefined);
     }
 
-    setSelectedTool(0);
+    if (resetToolAfterSend) {
+      setSelectedTool(0);
+      // Request overlay shell to stop analyzing (disable screen watch)
+      try {
+        emit("overlay_request_stop_analyze", {});
+      } catch (_) {}
+    }
     setAttachedImage(null);
     setImagePreview(null);
   };

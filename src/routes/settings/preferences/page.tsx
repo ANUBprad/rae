@@ -60,6 +60,12 @@ const Preferences = () => {
     useState<boolean>(false);
   const [notchWindowDisplay, setNotchWindowDisplay] = useState<boolean>(true);
   const [stealthMode, setStealthMode] = useState<boolean>(false);
+  const [overlayResetToolAfterSend, setOverlayResetToolAfterSend] =
+    useState<boolean>(
+      localStorage.getItem("overlay_reset_tool_after_send") === "false"
+        ? false
+        : true,
+    );
 
   useEffect(() => {
     invoke<boolean>("get_auto_show_on_copy_enabled")
@@ -130,6 +136,18 @@ const Preferences = () => {
                     enabled: next,
                   });
                 } catch (_) {}
+              }}
+            />
+            <ToggleRow
+              label="Turn off analyze after send (Overlay)"
+              enabled={overlayResetToolAfterSend}
+              onToggle={async (next) => {
+                setOverlayResetToolAfterSend(next);
+                localStorage.setItem(
+                  "overlay_reset_tool_after_send",
+                  String(next),
+                );
+                emit("overlay_reset_tool_after_send_changed", { enabled: next });
               }}
             />
           </div>
