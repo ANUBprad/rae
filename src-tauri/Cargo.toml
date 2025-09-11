@@ -5,12 +5,7 @@ description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [lib]
-# The `_lib` suffix may seem redundant but it is necessary
-# to make the lib name unique and wouldn't conflict with the bin name.
-# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
 name = "rae_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
@@ -18,17 +13,23 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
+# ✅ only keep `tray-icon` feature, remove `menu` (it doesn't exist in Tauri v2)
+tauri = { version = "2", features = ["tray-icon"] }
+
 tauri-plugin-opener = "2"
 tauri-plugin-global-shortcut = "2"
-enigo = "0.1"                            # For mouse position
+tauri-plugin-shell = "2.3.1"
 
+enigo = "0.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 image = { version = "0.24", default-features = false, features = ["png"] }
 base64 = "0.21"
+fastrand = "2.0"
+engine = "0.0.0"
+window-vibrancy = "0.6.0"
 
-# Add winapi for Windows API access
+# Windows-specific crates
 winapi = { version = "0.3", features = [
     "winuser",
     "processthreadsapi",
@@ -48,7 +49,6 @@ winapi = { version = "0.3", features = [
     "wingdi",
 ] }
 
-# Modern Windows bindings for COM/Shell (for packaged app icons)
 windows = { version = "0.51.1", features = [
     "Win32_Foundation",
     "Win32_System_Com",
@@ -60,10 +60,6 @@ windows = { version = "0.51.1", features = [
     "Win32_Graphics_Gdi",
     "Win32_UI_Accessibility",
 ] }
-uiautomation = "0.22.2"
 
+uiautomation = "0.22.2"
 reqwest = { version = "0.11", features = ["json"] }
-tauri-plugin-shell = "2.3.1"
-fastrand = "2.0"
-engine = "0.0.0"
-window-vibrancy = "0.6.0"

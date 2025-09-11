@@ -8,6 +8,58 @@ mod utils;
 // Import required traits
 use tauri::Manager;
 use tauri_plugin_global_shortcut::GlobalShortcutExt;
+use tauri::menu::{Menu, MenuItemBuilder};
+use tauri::tray::{TrayIconBuilder, TrayIconEvent, MouseButton};
+use tauri::State;
+use std::sync::Mutex;
+
+struct TrayState(Mutex<bool>);
+
+#[tauri::command]
+fn create_tray(app: tauri::AppHandle, tray_state: State<TrayState>) {
+    if let Ok(mut created) = tray_state.0.lock() {
+        if *created {
+            return;
+        }
+        if let (Ok(show_item), Ok(quit_item)) = (
+            MenuItemBuilder::with_id("show_rae", "Show Rae").build(&app),
+            MenuItemBuilder::with_id("quit_rae", "Quit").build(&app),
+        ) {
+            if let Ok(menu) = Menu::with_items(&app, &[&show_item, &quit_item]) {
+                let _ = TrayIconBuilder::new()
+                    .menu(&menu)
+                    .on_tray_icon_event(|tray, event: TrayIconEvent| {
+                        match event {
+                            TrayIconEvent::Click { button: MouseButton::Left, .. } | TrayIconEvent::DoubleClick { .. } => {
+                                let app = tray.app_handle();
+                                if let Some(win) = app.get_webview_window("main") {
+                                    let _ = win.show();
+                                    let _ = win.set_focus();
+                                }
+                            }
+                            _ => {}
+                        }
+                    })
+                    .on_menu_event(|app, event| {
+                        match event.id().as_ref() {
+                            "show_rae" => {
+                                if let Some(win) = app.get_webview_window("main") {
+                                    let _ = win.show();
+                                    let _ = win.set_focus();
+                                }
+                            }
+                            "quit_rae" => {
+                                std::process::exit(0);
+                            }
+                            _ => {}
+                        }
+                    })
+                    .build(&app);
+                *created = true;
+            }
+        }
+    }
+}
 
 fn main() {
     tauri::Builder::default()
@@ -15,6 +67,7 @@ fn main() {
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .setup(|app| {
             let app_handle = app.handle().clone();
+            app.manage(TrayState(Mutex::new(false)));
 
             // Handle main window close event to also close overlay
             if let Some(main_window) = app.get_webview_window("main") {
@@ -89,7 +142,8 @@ fn main() {
             functions::general::capture_window_screenshot,
             functions::general::capture_window_screenshot_by_title,
             functions::general::capture_window_screenshot_by_hwnd,
-            functions::supermemory::create_connection
+            functions::supermemory::create_connection,
+            create_tray
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
