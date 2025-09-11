@@ -16,6 +16,56 @@ use std::sync::Mutex;
 struct TrayState(Mutex<bool>);
 
 #[tauri::command]
+fn hide_main_to_tray(app: tauri::AppHandle, tray_state: State<TrayState>) {
+    // Ensure tray exists
+    if let Ok(mut created) = tray_state.0.lock() {
+        if !*created {
+            if let (Ok(show_item), Ok(quit_item)) = (
+                MenuItemBuilder::with_id("show_rae", "Show Rae").build(&app),
+                MenuItemBuilder::with_id("quit_rae", "Quit").build(&app),
+            ) {
+                if let Ok(menu) = Menu::with_items(&app, &[&show_item, &quit_item]) {
+                    let _ = TrayIconBuilder::new()
+                        .menu(&menu)
+                        .on_tray_icon_event(|tray, event: TrayIconEvent| {
+                            if let TrayIconEvent::Click { button: MouseButton::Left, .. } = event {
+                                let app = tray.app_handle();
+                                if let Some(win) = app.get_webview_window("main") {
+                                    let _ = win.set_skip_taskbar(false);
+                                    let _ = win.show();
+                                    let _ = win.set_focus();
+                                }
+                            }
+                        })
+                        .on_menu_event(|app, event| {
+                            match event.id().as_ref() {
+                                "show_rae" => {
+                                    if let Some(win) = app.get_webview_window("main") {
+                                        let _ = win.set_skip_taskbar(false);
+                                        let _ = win.show();
+                                        let _ = win.set_focus();
+                                    }
+                                }
+                                "quit_rae" => {
+                                    std::process::exit(0);
+                                }
+                                _ => {}
+                            }
+                        })
+                        .build(&app);
+                    *created = true;
+                }
+            }
+        }
+    }
+    // Hide and remove taskbar presence
+    if let Some(win) = app.get_webview_window("main") {
+        let _ = win.set_skip_taskbar(true);
+        let _ = win.hide();
+    }
+}
+
+#[tauri::command]
 fn create_tray(app: tauri::AppHandle, tray_state: State<TrayState>) {
     if let Ok(mut created) = tray_state.0.lock() {
         if *created {
@@ -187,7 +237,8 @@ fn main() {
             functions::general::capture_window_screenshot_by_title,
             functions::general::capture_window_screenshot_by_hwnd,
             functions::supermemory::create_connection,
-            create_tray
+            create_tray,
+            hide_main_to_tray
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
