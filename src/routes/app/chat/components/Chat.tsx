@@ -1,10 +1,22 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import autosize from "autosize";
-import { ChevronDown, Send, Globe, Brain, Image, X } from "lucide-react";
+import {
+  ChevronDown,
+  Send,
+  Globe,
+  Brain,
+  Image,
+  X,
+  Wrench,
+} from "lucide-react";
 import Button from "@/components/ui/Button";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowElbowDownLeftIcon } from "@phosphor-icons/react";
+import {
+  ArrowElbowDownLeftIcon,
+  CheckIcon,
+  GlobeSimpleIcon,
+  BrainIcon,
+} from "@phosphor-icons/react";
 
 const defaultModels = [
   { label: "OpenAi", value: "gpt-4o-mini" },
@@ -51,10 +63,35 @@ const Chat: React.FC<ChatProps> = ({
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [init, setInit] = useState(initial);
+  const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
+  const toolsDropdownRef = useRef<HTMLDivElement>(null);
+  const toolsDropdownRef2 = useRef<HTMLDivElement>(null);
   // If initial prop changes, update init accordingly
   useEffect(() => {
     setInit(initial);
   }, [initial]);
+
+  // Close tools dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        toolsDropdownRef.current &&
+        !toolsDropdownRef.current.contains(event.target as Node) &&
+        toolsDropdownRef2.current &&
+        !toolsDropdownRef2.current.contains(event.target as Node)
+      ) {
+        setToolsDropdownOpen(false);
+      }
+    };
+
+    if (toolsDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [toolsDropdownOpen]);
 
   // Use local model state if not controlled
   const modelsList = modelsProp || defaultModels;
@@ -92,7 +129,7 @@ const Chat: React.FC<ChatProps> = ({
     setImagePreview(null);
     if (chatInputRef.current) {
       chatInputRef.current.value = "";
-    //   autosize.update(chatInputRef.current);
+      //   autosize.update(chatInputRef.current);
     }
   };
 
@@ -129,7 +166,7 @@ const Chat: React.FC<ChatProps> = ({
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      if (item.type.indexOf('image') !== -1) {
+      if (item.type.indexOf("image") !== -1) {
         e.preventDefault();
         const file = item.getAsFile();
         if (file) {
@@ -173,12 +210,18 @@ const Chat: React.FC<ChatProps> = ({
       >
         {!init && (
           <>
-            <motion.div animate={{ opacity: 1 }} className="text-3xl text-zinc-200 font-semibold">
+            <motion.div
+              animate={{ opacity: 1 }}
+              className="text-3xl text-zinc-200 font-semibold"
+            >
               Welcome Back
             </motion.div>
             <motion.div
               initial={{ width: "70%", height: "100px" }}
-              animate={{ width: init ? "0%" : "70%", height: init ? "100px" : "150px" }}
+              animate={{
+                width: init ? "0%" : "70%",
+                height: init ? "100px" : "150px",
+              }}
               className=" pointer-events-auto flex gap-2 relative"
             >
               <div className="w-full">
@@ -188,7 +231,11 @@ const Chat: React.FC<ChatProps> = ({
                       onChange={(e) => setMessage(e.target.value)}
                       onPaste={handlePaste}
                       ref={chatInputRef}
-                      placeholder={attachedImage ? "Describe what you want to know about this image..." : "Enter your message or paste a screenshot"}
+                      placeholder={
+                        attachedImage
+                          ? "Describe what you want to know about this image..."
+                          : "Enter your message or paste a screenshot"
+                      }
                       name=""
                       id=""
                       className="size-full min-h-[60px] placeholder:text-foreground/40 resize-none outline-none text-sm p-2 pr-12"
@@ -256,7 +303,7 @@ const Chat: React.FC<ChatProps> = ({
                         )}
                       </AnimatePresence>
                       <div
-                        onClick={() => setExpanded(v => !v)}
+                        onClick={() => setExpanded((v) => !v)}
                         className={`w-fit flex gap-2 ${
                           expanded
                             ? "bg-foreground/5 border-t border-t-foreground/10 rounded-t-none "
@@ -269,6 +316,79 @@ const Chat: React.FC<ChatProps> = ({
                           size={12}
                         ></ChevronDown>
                       </div>
+                    </div>
+
+                    {/* Tools Dropdown */}
+                    <div className="h-full relative" ref={toolsDropdownRef}>
+                      <AnimatePresence>
+                        {toolsDropdownOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, scaleY: 0.9 }}
+                            animate={{ opacity: 1, scaleY: 1 }}
+                            exit={{ opacity: 0, scaleY: 0.9 }}
+                            style={{ transformOrigin: "bottom center" }}
+                            className="absolute bottom-full mb-2 w-48 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-50"
+                          >
+                            <button
+                              onClick={() => {
+                                onToolChange?.(selectedTool === 1 ? 0 : 1);
+                                setToolsDropdownOpen(false);
+                              }}
+                              className={`flex gap-3 text-sm w-full transition-colors duration-100 px-3 py-2.5 font-medium hover:bg-foreground/10 items-center ${
+                                selectedTool === 1
+                                  ? "bg-foreground/5 text-foreground"
+                                  : "text-foreground/70"
+                              }`}
+                            >
+                              <GlobeSimpleIcon className="text-lg" />
+                              Web Search
+                              {selectedTool === 1 && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  className="ml-auto"
+                                >
+                                  <CheckIcon className="" weight="bold" />
+                                </motion.div>
+                              )}
+                            </button>
+                            <button
+                              onClick={() => {
+                                onToolChange?.(selectedTool === 2 ? 0 : 2);
+                                setToolsDropdownOpen(false);
+                              }}
+                              className={`flex gap-3 text-sm w-full transition-colors duration-100 px-3 py-2.5 font-medium hover:bg-foreground/10 items-center ${
+                                selectedTool === 2
+                                  ? "bg-foreground/5 text-foreground"
+                                  : "text-foreground/70"
+                              }`}
+                            >
+                              <BrainIcon className="text-lg" />
+                              Super Memory
+                              {selectedTool === 2 && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  className="ml-auto"
+                                >
+                                  <CheckIcon className="" weight="bold" />
+                                </motion.div>
+                              )}
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      <button
+                        onClick={() => setToolsDropdownOpen(!toolsDropdownOpen)}
+                        className="h-full px-4 border border-border rounded-lg hover:bg-foreground/5 transition-colors duration-100 flex items-center gap-2 text-sm font-medium text-foreground/70"
+                      >
+                        <Wrench size={16} />
+                        Tools
+                        <ChevronDown
+                          className={`${toolsDropdownOpen ? "rotate-180" : ""} transition-all`}
+                          size={12}
+                        />
+                      </button>
                     </div>
 
                     <motion.div
@@ -295,21 +415,26 @@ const Chat: React.FC<ChatProps> = ({
           </>
         )}
         <AnimatePresence mode="popLayout">
-            {init && (
-          <motion.div
-            initial={{ width: "70%", height: "100px" }}
-            animate={{ width: "100%", height: "120px" }}
-            // exit={{ width: "70%", height: "100px" }}
-            className=" pointer-events-auto flex gap-2 relative"
-          >
-            
+          {init && (
+            <motion.div
+              initial={{ width: "70%", height: "100px" }}
+              animate={{ width: "100%", height: "120px" }}
+              // exit={{ width: "70%", height: "100px" }}
+              className=" pointer-events-auto flex gap-2 relative"
+            >
               <div className="bg-zinc-900/50 w-full h-full border flex flex-col transition-all rounded-lg border-border group focus-within:border-foreground/20 ">
                 <div className="relative h-full">
                   <textarea
-                    onChange={() => handleInputChange(chatInputRef.current?.value ?? "")}
+                    onChange={() =>
+                      handleInputChange(chatInputRef.current?.value ?? "")
+                    }
                     onPaste={handlePaste}
                     ref={chatInputRef}
-                    placeholder={attachedImage ? "Describe what you want to know about this image..." : "Enter your message or paste a screenshot"}
+                    placeholder={
+                      attachedImage
+                        ? "Describe what you want to know about this image..."
+                        : "Enter your message or paste a screenshot"
+                    }
                     name=""
                     id=""
                     className="size-full  placeholder:text-foreground/40 resize-none outline-none text-sm p-2 pr-12"
@@ -377,7 +502,7 @@ const Chat: React.FC<ChatProps> = ({
                       )}
                     </AnimatePresence>
                     <div
-                      onClick={() => setExpanded(v => !v)}
+                      onClick={() => setExpanded((v) => !v)}
                       className={`w-fit flex gap-2 ${
                         expanded
                           ? "bg-foreground/5 border-t border-t-foreground/10 rounded-t-none "
@@ -392,6 +517,79 @@ const Chat: React.FC<ChatProps> = ({
                     </div>
                   </div>
 
+                  {/* Tools Dropdown - Expanded View */}
+                  <div className="h-full relative" ref={toolsDropdownRef2}>
+                    <AnimatePresence>
+                      {toolsDropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, scaleY: 0.9 }}
+                          animate={{ opacity: 1, scaleY: 1 }}
+                          exit={{ opacity: 0, scaleY: 0.9 }}
+                          style={{ transformOrigin: "bottom center" }}
+                          className="absolute bottom-full mb-2 w-48 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-50"
+                        >
+                          <button
+                            onClick={() => {
+                              onToolChange?.(selectedTool === 1 ? 0 : 1);
+                              setToolsDropdownOpen(false);
+                            }}
+                            className={`flex gap-3 text-sm w-full transition-colors duration-100 px-3 py-2.5 font-medium hover:bg-foreground/10 items-center ${
+                              selectedTool === 1
+                                ? "bg-foreground/5 text-foreground"
+                                : "text-foreground/70"
+                            }`}
+                          >
+                            <GlobeSimpleIcon className="text-lg" />
+                            Web Search
+                            {selectedTool === 1 && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="ml-auto"
+                              >
+                                <CheckIcon className="" weight="bold" />
+                              </motion.div>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              onToolChange?.(selectedTool === 2 ? 0 : 2);
+                              setToolsDropdownOpen(false);
+                            }}
+                            className={`flex gap-3 text-sm w-full transition-colors duration-100 px-3 py-2.5 font-medium hover:bg-foreground/10 items-center ${
+                              selectedTool === 2
+                                ? "bg-foreground/5 text-foreground"
+                                : "text-foreground/70"
+                            }`}
+                          >
+                            <BrainIcon className="text-lg" />
+                            Super Memory
+                            {selectedTool === 2 && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="ml-auto"
+                              >
+                                <CheckIcon className="" weight="bold" />
+                              </motion.div>
+                            )}
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    <button
+                      onClick={() => setToolsDropdownOpen(!toolsDropdownOpen)}
+                      className="h-full px-4 border border-border rounded-lg hover:bg-foreground/5 transition-colors duration-100 flex items-center gap-2 text-sm font-medium text-foreground/70"
+                    >
+                      <Wrench size={16} />
+                      Tools
+                      <ChevronDown
+                        className={`${toolsDropdownOpen ? "rotate-180" : ""} transition-all`}
+                        size={12}
+                      />
+                    </button>
+                  </div>
+
                   <motion.div
                     initial={{}}
                     whileTap={{ scale: disabled ? 1 : 0.9 }}
@@ -399,21 +597,20 @@ const Chat: React.FC<ChatProps> = ({
                       disabled ? "saturate-0 pointer-events-none" : ""
                     } flex items-center justify-center `}
                   >
-                   <button
-                        disabled={disabled}
-                        className={`rounded-lg size-full dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-colors duration-100 p-0 flex items-center justify-center ${
-                          disabled && "dark:bg-zinc-800  !text-foreground/20"
-                        }`}
-                        onClick={handleSend}
-                      >
-                        <ArrowElbowDownLeftIcon weight="bold"></ArrowElbowDownLeftIcon>
-                      </button>
+                    <button
+                      disabled={disabled}
+                      className={`rounded-lg size-full dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-colors duration-100 p-0 flex items-center justify-center ${
+                        disabled && "dark:bg-zinc-800  !text-foreground/20"
+                      }`}
+                      onClick={handleSend}
+                    >
+                      <ArrowElbowDownLeftIcon weight="bold"></ArrowElbowDownLeftIcon>
+                    </button>
                   </motion.div>
                 </div>
               </div>
-            
-          </motion.div>
-        )}
+            </motion.div>
+          )}
         </AnimatePresence>
       </motion.div>
     </div>
