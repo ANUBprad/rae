@@ -1,4 +1,6 @@
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { emit } from "@tauri-apps/api/event";
+import { invoke } from "@tauri-apps/api/core";
 import { Minus, X } from "lucide-react";
 import React from "react";
 
@@ -15,6 +17,7 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
 }) => {
   const handleMinimize = async (): Promise<void> => {
     try {
+      // Standard minimize to taskbar
       await getCurrentWebviewWindow().minimize();
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -44,10 +47,11 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
         type="button"
         onClick={async () => {
           try {
-            await getCurrentWebviewWindow().close();
+            // Create tray + hide and remove taskbar presence (stealth-like)
+            try { await invoke("hide_main_to_tray"); } catch (_) {}
           } catch (error) {
             // eslint-disable-next-line no-console
-            console.error("Failed to close window", error);
+            console.error("Failed to hide window", error);
           }
         }}
         title="Close"
