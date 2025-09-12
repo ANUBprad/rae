@@ -123,9 +123,13 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, None))
         .setup(|app| {
             let app_handle = app.handle().clone();
             app.manage(TrayState(Mutex::new(false)));
+
+            // Log startup time for debugging
+            println!("Rae app started successfully at {:?}", std::time::Instant::now());
 
             // Intercept main window close and hide to tray instead
             if let Some(main_window) = app.get_webview_window("main") {
@@ -245,6 +249,8 @@ fn main() {
             functions::general::capture_window_screenshot,
             functions::general::capture_window_screenshot_by_title,
             functions::general::capture_window_screenshot_by_hwnd,
+            functions::general::set_auto_start_enabled,
+            functions::general::get_auto_start_enabled,
             functions::supermemory::create_connection,
             create_tray,
             hide_main_to_tray

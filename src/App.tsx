@@ -52,36 +52,42 @@ function App() {
     const combo = MAGIC_DOT_TOGGLE_COMBO;
     const cooldownMs = MAGIC_DOT_TOGGLE_COOLDOWN_MS;
     let lastFired = 0;
-    const setup = async () => {
-      try {
+
+    // Delay shortcut registration by 2 seconds to improve startup speed
+    const timer = setTimeout(async () => {
+      const setup = async () => {
         try {
-          if (await isRegistered(combo)) {
-            await unregister(combo);
-          }
-        } catch (e) {
-          console.warn("isRegistered/unregister failed; continuing", e);
-        }
-        await register(combo, async () => {
-          console.log("Global shortcut pressed:", combo);
-          const now = Date.now();
-          if (now - lastFired < cooldownMs) {
-            return;
-          }
-          lastFired = now;
           try {
-            await invoke("toggle_magic_dot");
-            console.log("Invoked toggle_magic_dot");
+            if (await isRegistered(combo)) {
+              await unregister(combo);
+            }
           } catch (e) {
-            console.error("Failed to toggle magic dot", e);
+            console.warn("isRegistered/unregister failed; continuing", e);
           }
-        });
-        const ok = await isRegistered(combo);
-      } catch (e) {
-        console.error("Failed to register global shortcut", e);
-      }
-    };
-    setup();
+          await register(combo, async () => {
+            console.log("Global shortcut pressed:", combo);
+            const now = Date.now();
+            if (now - lastFired < cooldownMs) {
+              return;
+            }
+            lastFired = now;
+            try {
+              await invoke("toggle_magic_dot");
+              console.log("Invoked toggle_magic_dot");
+            } catch (e) {
+              console.error("Failed to toggle magic dot", e);
+            }
+          });
+          const ok = await isRegistered(combo);
+        } catch (e) {
+          console.error("Failed to register global shortcut", e);
+        }
+      };
+      await setup();
+    }, 2000);
+
     return () => {
+      clearTimeout(timer);
       unregister(combo).catch(() => {});
     };
   }, []);
@@ -91,35 +97,41 @@ function App() {
     const combo = SHOW_OVERLAY_CENTER_COMBO;
     const cooldownMs = SHOW_OVERLAY_CENTER_COOLDOWN_MS;
     let lastFired = 0;
-    const setup = async () => {
-      try {
+
+    // Delay by 2.5 seconds to avoid blocking startup
+    const timer = setTimeout(async () => {
+      const setup = async () => {
         try {
-          if (await isRegistered(combo)) {
-            await unregister(combo);
-          }
-        } catch (e) {
-          console.warn("isRegistered/unregister failed; continuing", e);
-        }
-        await register(combo, async () => {
-          console.log("Global shortcut pressed:", combo);
-          const now = Date.now();
-          if (now - lastFired < cooldownMs) {
-            return;
-          }
-          lastFired = now;
           try {
-            await invoke("center_overlay_bar");
+            if (await isRegistered(combo)) {
+              await unregister(combo);
+            }
           } catch (e) {
-            console.error("Failed to show overlay center", e);
+            console.warn("isRegistered/unregister failed; continuing", e);
           }
-        });
-        const ok = await isRegistered(combo);
-      } catch (e) {
-        console.error("Failed to register global shortcut", e);
-      }
-    };
-    setup();
+          await register(combo, async () => {
+            console.log("Global shortcut pressed:", combo);
+            const now = Date.now();
+            if (now - lastFired < cooldownMs) {
+              return;
+            }
+            lastFired = now;
+            try {
+              await invoke("center_overlay_bar");
+            } catch (e) {
+              console.error("Failed to show overlay center", e);
+            }
+          });
+          const ok = await isRegistered(combo);
+        } catch (e) {
+          console.error("Failed to register global shortcut", e);
+        }
+      };
+      await setup();
+    }, 2500);
+
     return () => {
+      clearTimeout(timer);
       unregister(combo).catch(() => {});
     };
   }, []);
@@ -129,37 +141,43 @@ function App() {
     const combo = "Ctrl+M";
     const cooldownMs = 300;
     let lastFired = 0;
-    const setup = async () => {
-      try {
+
+    // Delay by 3 seconds to avoid blocking startup
+    const timer = setTimeout(async () => {
+      const setup = async () => {
         try {
-          if (await isRegistered(combo)) {
-            await unregister(combo);
-          }
-        } catch (e) {
-          console.warn("isRegistered/unregister failed; continuing", e);
-        }
-        await register(combo, async () => {
-          console.log("Global shortcut pressed:", combo);
-          const now = Date.now();
-          if (now - lastFired < cooldownMs) {
-            return;
-          }
-          lastFired = now;
           try {
-            await invoke("center_overlay_bar");
-            console.log("Invoked center_overlay_bar");
+            if (await isRegistered(combo)) {
+              await unregister(combo);
+            }
           } catch (e) {
-            console.error("Failed to center overlay bar", e);
+            console.warn("isRegistered/unregister failed; continuing", e);
           }
-        });
-        const ok = await isRegistered(combo);
-        console.log("Registered global shortcut:", combo, ok);
-      } catch (e) {
-        console.error("Failed to register global shortcut", e);
-      }
-    };
-    setup();
+          await register(combo, async () => {
+            console.log("Global shortcut pressed:", combo);
+            const now = Date.now();
+            if (now - lastFired < cooldownMs) {
+              return;
+            }
+            lastFired = now;
+            try {
+              await invoke("center_overlay_bar");
+              console.log("Invoked center_overlay_bar");
+            } catch (e) {
+              console.error("Failed to center overlay bar", e);
+            }
+          });
+          const ok = await isRegistered(combo);
+          console.log("Registered global shortcut:", combo, ok);
+        } catch (e) {
+          console.error("Failed to register global shortcut", e);
+        }
+      };
+      await setup();
+    }, 3000);
+
     return () => {
+      clearTimeout(timer);
       unregister(combo).catch(() => {});
     };
   }, []);
@@ -169,37 +187,43 @@ function App() {
     const combo = "Ctrl+P";
     const cooldownMs = 300;
     let lastFired = 0;
-    const setup = async () => {
-      try {
+
+    // Delay by 3.5 seconds to avoid blocking startup
+    const timer = setTimeout(async () => {
+      const setup = async () => {
         try {
-          if (await isRegistered(combo)) {
-            await unregister(combo);
-          }
-        } catch (e) {
-          console.warn("isRegistered/unregister failed; continuing", e);
-        }
-        await register(combo, async () => {
-          console.log("Global shortcut pressed:", combo);
-          const now = Date.now();
-          if (now - lastFired < cooldownMs) {
-            return;
-          }
-          lastFired = now;
           try {
-            await invoke("toggle_pin_overlay");
-            console.log("Invoked toggle_pin_overlay");
+            if (await isRegistered(combo)) {
+              await unregister(combo);
+            }
           } catch (e) {
-            console.error("Failed to toggle pin overlay", e);
+            console.warn("isRegistered/unregister failed; continuing", e);
           }
-        });
-        const ok = await isRegistered(combo);
-        console.log("Registered global shortcut:", combo, ok);
-      } catch (e) {
-        console.error("Failed to register global shortcut", e);
-      }
-    };
-    setup();
+          await register(combo, async () => {
+            console.log("Global shortcut pressed:", combo);
+            const now = Date.now();
+            if (now - lastFired < cooldownMs) {
+              return;
+            }
+            lastFired = now;
+            try {
+              await invoke("toggle_pin_overlay");
+              console.log("Invoked toggle_pin_overlay");
+            } catch (e) {
+              console.error("Failed to toggle pin overlay", e);
+            }
+          });
+          const ok = await isRegistered(combo);
+          console.log("Registered global shortcut:", combo, ok);
+        } catch (e) {
+          console.error("Failed to register global shortcut", e);
+        }
+      };
+      await setup();
+    }, 3500);
+
     return () => {
+      clearTimeout(timer);
       unregister(combo).catch(() => {});
     };
   }, []);
@@ -209,63 +233,69 @@ function App() {
     let unlisten: undefined | (() => void);
     let unlistenSel: undefined | (() => void);
     let unlistenRae: undefined | (() => void);
-    async function setup() {
-      try {
-        // If previously enabled, ensure watcher thread is running after reload
-        const enabled = await invoke<boolean>("get_auto_show_on_copy_enabled");
-        if (enabled) {
-          await invoke("set_auto_show_on_copy_enabled", { enabled: true });
-        }
-      } catch (_) {}
-      try {
-        // Respect saved selection-watcher setting; do not force-enable
-        const selEnabled = await invoke<boolean>(
-          "get_auto_show_on_selection_enabled",
-        );
-        if (selEnabled) {
-          await invoke("set_auto_show_on_selection_enabled", { enabled: true });
-        }
-      } catch (_) {}
-      try {
-        // Enable rae watcher and check if it was previously enabled
-        const raeEnabled = await invoke<boolean>("get_rae_watcher_enabled");
-        if (raeEnabled) {
-          await invoke("set_rae_watcher_enabled", { enabled: true });
-        } else {
-          // Enable by default - you can change this behavior if needed
-          await invoke("set_rae_watcher_enabled", { enabled: true });
-        }
-      } catch (_) {}
-      try {
-        const { listen } = await import("@tauri-apps/api/event");
-        unlisten = await listen<{ text: string }>(
-          "clipboard_text_copied",
-          async () => {
-            try {
-              await invoke("show_magic_dot");
-            } catch (_) {}
-          },
-        );
-        unlistenSel = await listen<{ text: string }>(
-          "text_selected",
-          async () => {
-            try {
-              await invoke("show_magic_dot");
-            } catch (_) {}
-          },
-        );
-        unlistenRae = await listen("rae_mentioned", async () => {
-          try {
-            console.log("@rae detected! Showing magic dot...");
-            await invoke("show_magic_dot");
-          } catch (e) {
-            console.error("Failed to show magic dot on @rae", e);
+
+    // Delay heavy watcher setup by 4 seconds to prioritize app startup
+    const timer = setTimeout(async () => {
+      async function setup() {
+        try {
+          // If previously enabled, ensure watcher thread is running after reload
+          const enabled = await invoke<boolean>("get_auto_show_on_copy_enabled");
+          if (enabled) {
+            await invoke("set_auto_show_on_copy_enabled", { enabled: true });
           }
-        });
-      } catch (_) {}
-    }
-    setup();
+        } catch (_) {}
+        try {
+          // Respect saved selection-watcher setting; do not force-enable
+          const selEnabled = await invoke<boolean>(
+            "get_auto_show_on_selection_enabled",
+          );
+          if (selEnabled) {
+            await invoke("set_auto_show_on_selection_enabled", { enabled: true });
+          }
+        } catch (_) {}
+        try {
+          // Enable rae watcher and check if it was previously enabled
+          const raeEnabled = await invoke<boolean>("get_rae_watcher_enabled");
+          if (raeEnabled) {
+            await invoke("set_rae_watcher_enabled", { enabled: true });
+          } else {
+            // Enable by default - you can change this behavior if needed
+            await invoke("set_rae_watcher_enabled", { enabled: true });
+          }
+        } catch (_) {}
+        try {
+          const { listen } = await import("@tauri-apps/api/event");
+          unlisten = await listen<{ text: string }>(
+            "clipboard_text_copied",
+            async () => {
+              try {
+                await invoke("show_magic_dot");
+              } catch (_) {}
+            },
+          );
+          unlistenSel = await listen<{ text: string }>(
+            "text_selected",
+            async () => {
+              try {
+                await invoke("show_magic_dot");
+              } catch (_) {}
+            },
+          );
+          unlistenRae = await listen("rae_mentioned", async () => {
+            try {
+              console.log("@rae detected! Showing magic dot...");
+              await invoke("show_magic_dot");
+            } catch (e) {
+              console.error("Failed to show magic dot on @rae", e);
+            }
+          });
+        } catch (_) {}
+      }
+      await setup();
+    }, 4000);
+
     return () => {
+      clearTimeout(timer);
       if (unlisten) unlisten();
       if (unlistenSel) unlistenSel();
       if (unlistenRae) unlistenRae();

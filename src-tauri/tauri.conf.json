@@ -45,12 +45,18 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": null
+    }
   },
 
   "plugins": {
     "shell": {
       "open": true
-    }
+    },
+    "autostart": null
   }
 }

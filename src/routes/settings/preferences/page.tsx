@@ -66,6 +66,9 @@ const Preferences = () => {
         ? false
         : true,
     );
+  const [autoStartEnabled, setAutoStartEnabled] = useState<boolean>(
+    localStorage.getItem("auto_start_enabled") === "true",
+  );
 
   useEffect(() => {
     invoke<boolean>("get_auto_show_on_copy_enabled")
@@ -80,6 +83,39 @@ const Preferences = () => {
     invoke<boolean>("get_stealth_mode_enabled")
       .then((v) => setStealthMode(!!v))
       .catch(() => {});
+    invoke<boolean>("get_auto_start_enabled")
+      .then(async (currentlyEnabled) => {
+        // Check what was stored in localStorage
+        const storedPreference = localStorage.getItem("auto_start_enabled") === "true";
+
+        if (storedPreference && !currentlyEnabled) {
+          // User wants it enabled but it's not currently enabled, so enable it
+          try {
+            await invoke("set_auto_start_enabled", { enabled: true });
+            setAutoStartEnabled(true);
+          } catch (error) {
+            console.error("Failed to enable auto-start:", error);
+            setAutoStartEnabled(false);
+          }
+        } else if (!storedPreference && currentlyEnabled) {
+          // User wants it disabled but it's currently enabled, so disable it
+          try {
+            await invoke("set_auto_start_enabled", { enabled: false });
+            setAutoStartEnabled(false);
+          } catch (error) {
+            console.error("Failed to disable auto-start:", error);
+            setAutoStartEnabled(true);
+          }
+        } else {
+          // State matches preference
+          setAutoStartEnabled(currentlyEnabled);
+        }
+      })
+      .catch(() => {
+        // Fallback to localStorage if backend call fails
+        const stored = localStorage.getItem("auto_start_enabled") === "true";
+        setAutoStartEnabled(stored);
+      });
 
     // Listen for stealth mode changes from other components
     const unlisten = listen("stealth_mode_changed", (event: any) => {
@@ -150,6 +186,36 @@ const Preferences = () => {
                 emit("overlay_reset_tool_after_send_changed", { enabled: next });
               }}
             />
+            <div>
+              <ToggleRow
+                label="Start Rae automatically on system startup"
+                enabled={autoStartEnabled}
+                onToggle={async (next) => {
+                  setAutoStartEnabled(next);
+                  localStorage.setItem("auto_start_enabled", String(next));
+                  try {
+                    await invoke("set_auto_start_enabled", {
+                      enabled: next,
+                    });
+                    console.log(`Auto-start ${next ? 'enabled' : 'disabled'} successfully`);
+                    if (next) {
+                      alert("Auto-start enabled! The app will now run as administrator when Windows starts. You may see a UAC prompt on startup.");
+                    }
+                  } catch (error) {
+                    console.error("Failed to toggle auto-start:", error);
+                    // Revert the UI state if the operation failed
+                    setAutoStartEnabled(!next);
+                    localStorage.setItem("auto_start_enabled", String(!next));
+                    alert(`Failed to ${next ? 'enable' : 'disable'} auto-start. Please run the app as administrator and try again.`);
+                  }
+                }}
+              />
+              {autoStartEnabled && (
+                <div className="px-5 py-2 text-xs text-foreground/60">
+                  Note: Rae will run with administrator privileges on startup to ensure all features work properly.
+                </div>
+              )}
+            </div>
           </div>
         </Card>
         <Card>

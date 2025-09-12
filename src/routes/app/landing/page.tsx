@@ -16,9 +16,13 @@ export default function Landing() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Only launch the magic dot when logged in
+    // Only launch the magic dot when logged in, but delay it to improve startup speed
     if (loggedIn) {
-      LaunchOverlayWindow();
+      // Delay overlay launch by 1 second to prioritize main app loading
+      const timer = setTimeout(() => {
+        LaunchOverlayWindow();
+      }, 1000);
+      return () => clearTimeout(timer);
     }
   }, [loggedIn]);
 
