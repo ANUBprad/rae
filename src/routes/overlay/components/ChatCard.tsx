@@ -75,6 +75,8 @@ interface ChatViewProps {
   windowScreenshot?: string;
   isActive?: boolean;
   isMaximized?: boolean;
+  setIsMaximized?: (maximized: boolean) => void;
+  isPinned?: boolean;
   currentPage?: string;
   setCurrentPage?: (page: string) => void;
 }
@@ -170,6 +172,8 @@ export const ChatView = ({
   windowScreenshot,
   isActive,
   isMaximized = false,
+  setIsMaximized,
+  isPinned = false,
   currentPage = "chat",
   setCurrentPage,
 }: ChatViewProps) => {
@@ -646,15 +650,19 @@ export const ChatView = ({
         return null; // Return null to show the regular chat content
       case "settings":
         return (
-          <div className={`p-4 text-foreground ${isMaximized ? 'w-screen h-screen' : 'flex-1'}`}>
-            <h2 className="text-xl font-semibold mb-4">Settings</h2>
-            <div className="space-y-4">
-              <div className="p-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
-                <h3 className="font-medium">Preferences</h3>
+          <div className={`text-foreground overflow-y-auto ${
+            isMaximized
+              ? 'w-full px-6 py-4 mt-2'
+              : 'flex-1 p-4'
+          }`} style={isMaximized ? { height: 'calc(100vh - 80px)' } : {}}>
+            <h2 className="text-xl font-semibold mb-6">Settings</h2>
+            <div className="space-y-4 max-w-4xl mx-auto">
+              <div className="p-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+                <h3 className="font-medium mb-2">Preferences</h3>
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">Configure your app preferences here</p>
               </div>
-              <div className="p-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
-                <h3 className="font-medium">Shortcuts</h3>
+              <div className="p-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+                <h3 className="font-medium mb-2">Shortcuts</h3>
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">Manage keyboard shortcuts</p>
               </div>
             </div>
@@ -662,11 +670,17 @@ export const ChatView = ({
         );
       case "notes":
         return (
-          <div className={`p-4 text-foreground ${isMaximized ? 'w-screen h-screen' : 'flex-1'}`}>
-            <h2 className="text-xl font-semibold mb-4">Notes</h2>
-            <div className="p-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
-              <h3 className="font-medium">Your Notes</h3>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">Access and manage your notes</p>
+          <div className={`text-foreground overflow-y-auto ${
+            isMaximized
+              ? 'w-full px-6 py-4 mt-2'
+              : 'flex-1 p-4'
+          }`} style={isMaximized ? { height: 'calc(100vh - 80px)' } : {}}>
+            <h2 className="text-xl font-semibold mb-6">Notes</h2>
+            <div className="space-y-4 max-w-4xl mx-auto">
+              <div className="p-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+                <h3 className="font-medium mb-2">Your Notes</h3>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">Access and manage your notes</p>
+              </div>
             </div>
           </div>
         );
@@ -690,15 +704,40 @@ export const ChatView = ({
       }`}
     >
       <div className={`flex-1 flex flex-col text-foreground dark:bg-[#010101] bg-white relative transition-all duration-200 ${
-        isMaximized ? 'w-screen h-screen' : 'min-h-[300px]'
-      }`}>
+        isMaximized ? 'w-screen' : 'min-h-[300px]'
+      }`} style={isMaximized ? { height: 'calc(100vh - 30px)' } : {}}>
         {/* Render page content for maximized state or chat header */}
         {isMaximized && currentPage !== "chat" ? (
-          renderPageContent()
+          <>
+            {/* Centered overlay bar for maximized pages */}
+            <div className="h-fit items-center border-b-2 overflow-hidden  border-b-border/20  mx-auto flex mb-6">
+              <div className="h-full w-full flex justify-between items-center p-2 tracking-tight font-medium">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div className="flex items-center gap-2 text-foreground min-w-0 flex-1">
+                    <span className="truncate flex-1 px-2 text-sm font-semibold capitalize">
+                      {currentPage}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center h-full ml-auto p-1 gap-1">
+                  <OverlayButton
+                    onClick={() => setIsMaximized(false)}
+                    title="Minimize"
+                    draggable={!isPinned}
+                  >
+                    <Minimize2 size={16} />
+                  </OverlayButton>
+                </div>
+              </div>
+            </div>
+            {renderPageContent()}
+          </>
         ) : (
           <>
             {/* Chat header */}
-        <div className="h-fit items-center border-b-2 overflow-hidden border-b-border/20 w-full flex">
+        <div className={`h-fit items-center border-b-2 overflow-hidden border-b-border/20 flex ${
+          isMaximized ? 'w-[600px] mx-auto' : 'w-full'
+        }`}>
           <div className="h-full w-full flex justify-between items-center p-2 tracking-tight font-medium">
             <div className="flex items-center gap-2 min-w-0 flex-1">
               <div className="flex items-center gap-2 text-foreground min-w-0 flex-1">

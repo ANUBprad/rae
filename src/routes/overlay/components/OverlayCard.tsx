@@ -219,7 +219,7 @@ const Overlay = () => {
         } catch (error) {
           console.error("Failed to enter fullscreen:", error);
           // Fallback to large window size
-          resize(1600, 1000);
+          resize(1100, 700);
         }
       };
       makeFullscreen();
@@ -843,7 +843,7 @@ const Overlay = () => {
             opacity: { duration: 0.2, ease: "easeOut" },
             y: { duration: 0.3, ease: "easeOut" },
           }}
-          className={`flex items-center z-[100000] dark:bg-[#010101] bg-white  w-full h-[44px] shrink-0 ${
+          className={`flex items-center z-[100000] dark:bg-[#010101] bg-white  ${isMaximized? 'max-w-[400px] mx-auto' : 'w-full'} px-6 h-[44px] shrink-0 ${
             !isPinned ? "drag" : ""
           } ${isNotch ? "pointer-events-none" : ""}`}
           style={{  borderRadius: "12px" }}
@@ -1234,6 +1234,8 @@ const Overlay = () => {
               windowScreenshot={windowScreenshot}
               isActive={isActive}
               isMaximized={isMaximized}
+              setIsMaximized={setIsMaximized}
+              isPinned={isPinned}
               currentPage={currentPage}
               setCurrentPage={setCurrentPage}
             />
