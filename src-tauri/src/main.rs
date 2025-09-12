@@ -128,12 +128,8 @@ fn main() {
             let app_handle = app.handle().clone();
             app.manage(TrayState(Mutex::new(false)));
 
-            // Initialize auto-start based on user preference from localStorage
-            let app_handle_clone = app_handle.clone();
-            tauri::async_runtime::spawn(async move {
-                println!("App started, checking auto-start status...");
-                // This will be handled by the frontend when it loads
-            });
+            // Log startup time for debugging
+            println!("Rae app started successfully at {:?}", std::time::Instant::now());
 
             // Intercept main window close and hide to tray instead
             if let Some(main_window) = app.get_webview_window("main") {

@@ -18,7 +18,7 @@ const SplashScreen: React.FC<SplashProps> = ({ onFadeOut }) => {
     <motion.div
       initial={{ opacity: 1 }}
       animate={{ opacity: 0 }}
-      transition={{ delay: 0.5, duration: 0.3 }}
+      transition={{ delay: 0.2, duration: 0.2 }}
       onAnimationComplete={() => {
         if (onFadeOut) onFadeOut();
       }}
