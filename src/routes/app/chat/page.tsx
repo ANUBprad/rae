@@ -373,7 +373,7 @@ export default function ChatWindow() {
 
   const { name } = useUserStore();
   return (
-    <div className="w-full h-[calc(100vh-36px)]  bg-background flex ">
+    <div className="w-full h-dvh  bg-background flex ">
       {/* Chat Area only, sidebar removed */}
       <div className="flex flex-col w-full overflow-hidden relative">
         <motion.div

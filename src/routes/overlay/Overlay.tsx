@@ -182,7 +182,7 @@ const MagicDot = () => {
   };
 
   return (
-    <motion.div className="w-[400px]">
+    <motion.div className="w-[400px] ">
       {expanded ? (
         <div
           onMouseEnter={() => {

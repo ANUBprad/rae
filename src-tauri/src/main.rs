@@ -253,7 +253,11 @@ fn main() {
             functions::general::get_auto_start_enabled,
             functions::supermemory::create_connection,
             create_tray,
-            hide_main_to_tray
+            hide_main_to_tray,
+            functions::app::show_app,
+            functions::app::hide_app,
+            functions::app::start_following_overlay
+           
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
