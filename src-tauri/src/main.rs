@@ -4,16 +4,18 @@
 mod functions;
 mod platform;
 mod utils;
+mod audio_client;
 
 // Import required traits
-use tauri::Manager;
-use tauri_plugin_global_shortcut::GlobalShortcutExt;
-use tauri::menu::{Menu, MenuItemBuilder};
-use tauri::tray::{TrayIconBuilder, TrayIconEvent, MouseButton};
-use tauri::image::Image;
-use tauri::State;
-use std::sync::Mutex;
+use audio_client::AudioState;
 use image as img_crate;
+use std::sync::Mutex;
+use tauri::image::Image;
+use tauri::menu::{Menu, MenuItemBuilder};
+use tauri::tray::{MouseButton, TrayIconBuilder, TrayIconEvent};
+use tauri::Manager;
+use tauri::State;
+use tauri_plugin_global_shortcut::GlobalShortcutExt;
 
 struct TrayState(Mutex<bool>);
 
@@ -35,7 +37,11 @@ fn hide_main_to_tray(app: tauri::AppHandle, tray_state: State<TrayState>) {
                         .icon(load_tray_icon())
                         .menu(&menu)
                         .on_tray_icon_event(|tray, event: TrayIconEvent| {
-                            if let TrayIconEvent::Click { button: MouseButton::Left, .. } = event {
+                            if let TrayIconEvent::Click {
+                                button: MouseButton::Left,
+                                ..
+                            } = event
+                            {
                                 let app = tray.app_handle();
                                 if let Some(win) = app.get_webview_window("main") {
                                     let _ = win.set_skip_taskbar(false);
@@ -44,20 +50,18 @@ fn hide_main_to_tray(app: tauri::AppHandle, tray_state: State<TrayState>) {
                                 }
                             }
                         })
-                        .on_menu_event(|app, event| {
-                            match event.id().as_ref() {
-                                "show_rae" => {
-                                    if let Some(win) = app.get_webview_window("main") {
-                                        let _ = win.set_skip_taskbar(false);
-                                        let _ = win.show();
-                                        let _ = win.set_focus();
-                                    }
+                        .on_menu_event(|app, event| match event.id().as_ref() {
+                            "show_rae" => {
+                                if let Some(win) = app.get_webview_window("main") {
+                                    let _ = win.set_skip_taskbar(false);
+                                    let _ = win.show();
+                                    let _ = win.set_focus();
                                 }
-                                "quit_rae" => {
-                                    std::process::exit(0);
-                                }
-                                _ => {}
                             }
+                            "quit_rae" => {
+                                std::process::exit(0);
+                            }
+                            _ => {}
                         })
                         .build(&app);
                     *created = true;
@@ -86,31 +90,31 @@ fn create_tray(app: tauri::AppHandle, tray_state: State<TrayState>) {
                 let _ = TrayIconBuilder::new()
                     .icon(load_tray_icon())
                     .menu(&menu)
-                    .on_tray_icon_event(|tray, event: TrayIconEvent| {
-                        match event {
-                            TrayIconEvent::Click { button: MouseButton::Left, .. } | TrayIconEvent::DoubleClick { .. } => {
-                                let app = tray.app_handle();
-                                if let Some(win) = app.get_webview_window("main") {
-                                    let _ = win.show();
-                                    let _ = win.set_focus();
-                                }
-                            }
-                            _ => {}
+                    .on_tray_icon_event(|tray, event: TrayIconEvent| match event {
+                        TrayIconEvent::Click {
+                            button: MouseButton::Left,
+                            ..
                         }
+                        | TrayIconEvent::DoubleClick { .. } => {
+                            let app = tray.app_handle();
+                            if let Some(win) = app.get_webview_window("main") {
+                                let _ = win.show();
+                                let _ = win.set_focus();
+                            }
+                        }
+                        _ => {}
                     })
-                    .on_menu_event(|app, event| {
-                        match event.id().as_ref() {
-                            "show_rae" => {
-                                if let Some(win) = app.get_webview_window("main") {
-                                    let _ = win.show();
-                                    let _ = win.set_focus();
-                                }
+                    .on_menu_event(|app, event| match event.id().as_ref() {
+                        "show_rae" => {
+                            if let Some(win) = app.get_webview_window("main") {
+                                let _ = win.show();
+                                let _ = win.set_focus();
                             }
-                            "quit_rae" => {
-                                std::process::exit(0);
-                            }
-                            _ => {}
                         }
+                        "quit_rae" => {
+                            std::process::exit(0);
+                        }
+                        _ => {}
                     })
                     .build(&app);
                 *created = true;
@@ -123,13 +127,19 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
-        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, None))
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            None,
+        ))
         .setup(|app| {
             let app_handle = app.handle().clone();
             app.manage(TrayState(Mutex::new(false)));
-
+app.manage(AudioState(Mutex::new(false)));
             // Log startup time for debugging
-            println!("Rae app started successfully at {:?}", std::time::Instant::now());
+            println!(
+                "Rae app started successfully at {:?}",
+                std::time::Instant::now()
+            );
 
             // Intercept main window close and hide to tray instead
             if let Some(main_window) = app.get_webview_window("main") {
@@ -147,26 +157,41 @@ fn main() {
                                     if !*created {
                                         // Build menu
                                         if let (Ok(show_item), Ok(quit_item)) = (
-                                            MenuItemBuilder::with_id("show_rae", "Show Rae").build(&app_handle_for_tray),
-                                            MenuItemBuilder::with_id("quit_rae", "Quit").build(&app_handle_for_tray),
+                                            MenuItemBuilder::with_id("show_rae", "Show Rae")
+                                                .build(&app_handle_for_tray),
+                                            MenuItemBuilder::with_id("quit_rae", "Quit")
+                                                .build(&app_handle_for_tray),
                                         ) {
-                                            if let Ok(menu) = Menu::with_items(&app_handle_for_tray, &[&show_item, &quit_item]) {
+                                            if let Ok(menu) = Menu::with_items(
+                                                &app_handle_for_tray,
+                                                &[&show_item, &quit_item],
+                                            ) {
                                                 let _ = TrayIconBuilder::new()
                                                     .icon(load_tray_icon())
                                                     .menu(&menu)
-                                                    .on_tray_icon_event(|tray, event: TrayIconEvent| {
-                                                        if let TrayIconEvent::Click { button: MouseButton::Left, .. } = event {
-                                                            let app = tray.app_handle();
-                                                            if let Some(win) = app.get_webview_window("main") {
-                                                                let _ = win.show();
-                                                                let _ = win.set_focus();
+                                                    .on_tray_icon_event(
+                                                        |tray, event: TrayIconEvent| {
+                                                            if let TrayIconEvent::Click {
+                                                                button: MouseButton::Left,
+                                                                ..
+                                                            } = event
+                                                            {
+                                                                let app = tray.app_handle();
+                                                                if let Some(win) =
+                                                                    app.get_webview_window("main")
+                                                                {
+                                                                    let _ = win.show();
+                                                                    let _ = win.set_focus();
+                                                                }
                                                             }
-                                                        }
-                                                    })
+                                                        },
+                                                    )
                                                     .on_menu_event(|app, event| {
                                                         match event.id().as_ref() {
                                                             "show_rae" => {
-                                                                if let Some(win) = app.get_webview_window("main") {
+                                                                if let Some(win) =
+                                                                    app.get_webview_window("main")
+                                                                {
                                                                     let _ = win.show();
                                                                     let _ = win.set_focus();
                                                                 }
@@ -197,11 +222,29 @@ fn main() {
                         println!("Overlay window close requested, cleaning up shortcuts...");
                         // Clean up global shortcuts when overlay is closed
                         let shortcuts = vec![
-                            tauri_plugin_global_shortcut::Shortcut::new(Some(tauri_plugin_global_shortcut::Modifiers::CONTROL), tauri_plugin_global_shortcut::Code::KeyH),
-                            tauri_plugin_global_shortcut::Shortcut::new(Some(tauri_plugin_global_shortcut::Modifiers::CONTROL), tauri_plugin_global_shortcut::Code::KeyM),
-                            tauri_plugin_global_shortcut::Shortcut::new(Some(tauri_plugin_global_shortcut::Modifiers::CONTROL), tauri_plugin_global_shortcut::Code::KeyP),
-                            tauri_plugin_global_shortcut::Shortcut::new(Some(tauri_plugin_global_shortcut::Modifiers::CONTROL | tauri_plugin_global_shortcut::Modifiers::SHIFT), tauri_plugin_global_shortcut::Code::Enter),
-                            tauri_plugin_global_shortcut::Shortcut::new(Some(tauri_plugin_global_shortcut::Modifiers::CONTROL), tauri_plugin_global_shortcut::Code::KeyD),
+                            tauri_plugin_global_shortcut::Shortcut::new(
+                                Some(tauri_plugin_global_shortcut::Modifiers::CONTROL),
+                                tauri_plugin_global_shortcut::Code::KeyH,
+                            ),
+                            tauri_plugin_global_shortcut::Shortcut::new(
+                                Some(tauri_plugin_global_shortcut::Modifiers::CONTROL),
+                                tauri_plugin_global_shortcut::Code::KeyM,
+                            ),
+                            tauri_plugin_global_shortcut::Shortcut::new(
+                                Some(tauri_plugin_global_shortcut::Modifiers::CONTROL),
+                                tauri_plugin_global_shortcut::Code::KeyP,
+                            ),
+                            tauri_plugin_global_shortcut::Shortcut::new(
+                                Some(
+                                    tauri_plugin_global_shortcut::Modifiers::CONTROL
+                                        | tauri_plugin_global_shortcut::Modifiers::SHIFT,
+                                ),
+                                tauri_plugin_global_shortcut::Code::Enter,
+                            ),
+                            tauri_plugin_global_shortcut::Shortcut::new(
+                                Some(tauri_plugin_global_shortcut::Modifiers::CONTROL),
+                                tauri_plugin_global_shortcut::Code::KeyD,
+                            ),
                         ];
 
                         for shortcut in shortcuts {
@@ -256,8 +299,8 @@ fn main() {
             hide_main_to_tray,
             functions::app::show_app,
             functions::app::hide_app,
-            functions::app::start_following_overlay
-           
+            functions::app::start_following_overlay,
+            audio_client::start_audio_client
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
