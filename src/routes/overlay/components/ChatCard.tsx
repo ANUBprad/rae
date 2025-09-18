@@ -79,6 +79,9 @@ interface ChatViewProps {
   isPinned?: boolean;
   currentPage?: string;
   setCurrentPage?: (page: string) => void;
+  assist?: boolean;
+  assistMessage?: string;
+  setAssistMessage?: (message: string) => void;
 }
 
 const Option = ({
@@ -119,7 +122,7 @@ const Option = ({
 const performSmoothResize = async (
   targetWidth: number,
   targetHeight: number,
-  duration: number = 160
+  duration: number = 160,
 ) => {
   const win = getCurrentWebviewWindow();
   const currentSize = await win.innerSize();
@@ -138,10 +141,10 @@ const performSmoothResize = async (
       const easedProgress = easeOutCubic(progress);
 
       const currentWidth = Math.round(
-        startWidth + (targetWidth - startWidth) * easedProgress
+        startWidth + (targetWidth - startWidth) * easedProgress,
       );
       const currentHeight = Math.round(
-        startHeight + (targetHeight - startHeight) * easedProgress
+        startHeight + (targetHeight - startHeight) * easedProgress,
       );
 
       await win.setSize(new LogicalSize(currentWidth, currentHeight));
@@ -176,6 +179,9 @@ export const ChatView = ({
   isPinned = false,
   currentPage = "chat",
   setCurrentPage,
+  assist = false,
+  assistMessage = "",
+  setAssistMessage,
 }: ChatViewProps) => {
   const { email } = useUserStore();
   const {
@@ -206,7 +212,7 @@ export const ChatView = ({
   const [resetToolAfterSend, setResetToolAfterSend] = useState<boolean>(
     localStorage.getItem("overlay_reset_tool_after_send") === "false"
       ? false
-      : true
+      : true,
   );
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -238,7 +244,7 @@ export const ChatView = ({
       "overlay_reset_tool_after_send_changed",
       (event: any) => {
         setResetToolAfterSend(!!event.payload.enabled);
-      }
+      },
     );
     return () => {
       unlisten.then((fn) => fn());
@@ -255,7 +261,7 @@ export const ChatView = ({
     modelName,
     image,
     tool,
-    newMessages
+    newMessages,
   ) => {
     // Streaming block
     setStreamingMsg("");
@@ -375,7 +381,7 @@ export const ChatView = ({
           currentModel.value,
           "",
           selectedTool,
-          newMessages
+          newMessages,
         );
       } else {
         ai_res = await Generate({
@@ -826,6 +832,20 @@ export const ChatView = ({
                   <Loader2 className="animate-spin text-zinc-700" size={24} />
                 </div>
               )}
+              {/* Assist message when assist mode is active */}
+              {assist && assistMessage && (
+                <div className="p-3 rounded-lg text-sm bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 self-start text-left w-fit max-w-[85%]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                      Assist Mode Active
+                    </span>
+                  </div>
+                  <div className="text-blue-800 dark:text-blue-200">
+                    {assistMessage}
+                  </div>
+                </div>
+              )}
               {/* Render all messages except the streaming one */}
               {messages.map((msg, idx) => (
                 <div
@@ -1063,7 +1083,7 @@ export const ChatView = ({
                                 } catch (error) {
                                   console.error(
                                     "Failed to toggle stealth mode:",
-                                    error
+                                    error,
                                   );
                                   // Revert state if backend call fails
                                   setStealthMode(stealthMode);

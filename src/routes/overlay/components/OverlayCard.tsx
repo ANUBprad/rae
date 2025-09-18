@@ -107,10 +107,14 @@ const Overlay = () => {
   const [isPinned, setIsPinned] = useState(false);
   const [inputText, setInputText] = useState(""); // For the main input bar
   const [listening, setlistening] = useState(false);
+  const [assist, setAssist] = useState(false);
+  const [assistMessage, setAssistMessage] = useState(
+    "Hello! Assist mode is now active. How can I help you?",
+  );
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isActive, setIsActive] = useState<boolean>(
-    () => localStorage.getItem("overlay_active") !== "false" // Default to true if not set
+    () => localStorage.getItem("overlay_active") !== "false", // Default to true if not set
   );
   // Handler to spawn overlay-extended window
 
@@ -122,7 +126,7 @@ const Overlay = () => {
   // const [showApp, setShowApp] = useState(false)
 
   const [showGradient, setShowGradient] = useState<boolean>(
-    localStorage.getItem("gradient") === "true"
+    localStorage.getItem("gradient") === "true",
   );
   // Respect preference to stop analyzing after send
   useEffect(() => {
@@ -183,7 +187,7 @@ const Overlay = () => {
       console.log("🔄 Clearing screenshot - toggle turned off");
       console.log(
         "📸 Before clearing, windowScreenshot length:",
-        windowScreenshot.length
+        windowScreenshot.length,
       );
       setWindowScreenshot("");
       setShowScreenshot(false);
@@ -192,7 +196,7 @@ const Overlay = () => {
       // Capture screenshot immediately when toggle is turned on
       if (windowHwnd != null) {
         console.log(
-          "🔄 Capturing screenshot immediately after toggle enabled..."
+          "🔄 Capturing screenshot immediately after toggle enabled...",
         );
         console.log("📍 Current windowHwnd:", windowHwnd);
 
@@ -202,16 +206,16 @@ const Overlay = () => {
           .then((screenshot: string) => {
             console.log(
               "✅ Immediate screenshot captured, length:",
-              screenshot.length
+              screenshot.length,
             );
             if (screenshot.length > 0) {
               console.log(
                 "📸 Screenshot starts with:",
-                screenshot.substring(0, 50)
+                screenshot.substring(0, 50),
               );
               setWindowScreenshot(screenshot);
               console.log(
-                "💾 windowScreenshot state updated for chat functionality"
+                "💾 windowScreenshot state updated for chat functionality",
               );
             } else {
               console.log("❌ Screenshot captured but empty");
@@ -377,7 +381,7 @@ const Overlay = () => {
       DISABLE_NOTCH_ON_SHOW.current
     ) {
       console.log(
-        "Safety: Setting fallback notch timeout (10s) due to disabled flag"
+        "Safety: Setting fallback notch timeout (10s) due to disabled flag",
       );
       setTimeout(() => {
         if (
@@ -399,7 +403,7 @@ const Overlay = () => {
             });
         } else if (DISABLE_SAFETY_NOTCH.current) {
           console.log(
-            "Safety: Skipping notch enable - safety flag is active (recent center operation)"
+            "Safety: Skipping notch enable - safety flag is active (recent center operation)",
           );
         }
       }, 10000); // 10 second fallback
@@ -472,7 +476,7 @@ const Overlay = () => {
       listen("gradient_changed", (event) => {
         console.log(
           "OverlayCard: gradient_changed event received:",
-          event.payload
+          event.payload,
         );
         const gradient = event.payload as { gradient: boolean };
         console.log("OverlayCard: Setting showGradient to:", gradient.gradient);
@@ -506,7 +510,7 @@ const Overlay = () => {
 
     return () => {
       eventListeners.forEach((promise) =>
-        promise.then((unlisten) => unlisten())
+        promise.then((unlisten) => unlisten()),
       );
     };
   }, []);
@@ -589,7 +593,7 @@ const Overlay = () => {
           isNotch,
           inputActive,
           disableNotch: DISABLE_NOTCH_ON_SHOW.current,
-        }
+        },
       );
     }
   };
@@ -741,7 +745,7 @@ const Overlay = () => {
       "Screenshot state changed - showScreenshot:",
       showScreenshot,
       "screenshot length:",
-      windowScreenshot.length
+      windowScreenshot.length,
     );
   }, [showScreenshot, windowScreenshot]);
 
@@ -853,23 +857,23 @@ const Overlay = () => {
                 borderRadius: "0 0 28px 28px",
               }
             : showChat && isMaximized
-            ? {
-                scale: 1,
-                y: 0,
-                borderRadius: "0px",
-                width: EXPANDED_WIDTH,
-                height: "100%",
-                x: 0,
-                top: 0,
-                left: 0,
-              }
-            : {
-                scale: 1,
-                y: 0,
-                borderRadius: "12px",
-                width: DEFAULT_CHAT[0],
-                height: "100%",
-              }
+              ? {
+                  scale: 1,
+                  y: 0,
+                  borderRadius: "0px",
+                  width: EXPANDED_WIDTH,
+                  height: "100%",
+                  x: 0,
+                  top: 0,
+                  left: 0,
+                }
+              : {
+                  scale: 1,
+                  y: 0,
+                  borderRadius: "12px",
+                  width: DEFAULT_CHAT[0],
+                  height: "100%",
+                }
         }
         transition={{
           type: "tween",
@@ -1002,7 +1006,11 @@ const Overlay = () => {
                       inputText ? "text-foreground" : "text-gray-500"
                     }`}
                   >
-                    {listening ? <></> : <>{inputText || "Ask Rae anything..."}</>}
+                    {listening ? (
+                      <></>
+                    ) : (
+                      <>{inputText || "Ask Rae anything..."}</>
+                    )}
                   </span>
                 </div>
               )
@@ -1068,19 +1076,19 @@ const Overlay = () => {
               <>
                 <OverlayButton
                   onClick={() => {
-                    setlistening((v) => !v);
+                    setAssist((v) => !v);
                   }}
-                  active={listening}
+                  active={assist}
                   title="Voice"
                   // draggable={!isPinned}
                   className={
-                    listening ? "!text-[#ffe941] dark:!text-surface " : ""
+                    assist ? "!text-[#ffe941] dark:!text-surface " : ""
                   }
                 >
-                  {listening ? (
+                  {assist ? (
                     <EarIcon weight="bold" size={16} />
                   ) : (
-                    <EarSlashIcon  weight="bold" size={16} />
+                    <EarSlashIcon weight="bold" size={16} />
                   )}
                   {/* <EarIcon weight={listening ? "fill" : "bold"} /> */}
                 </OverlayButton>
@@ -1167,7 +1175,7 @@ const Overlay = () => {
                 title="Open chat"
                 draggable={!isPinned}
               >
-                <CornersOutIcon  size={16} />
+                <CornersOutIcon size={16} />
               </OverlayButton>
             )}
           </div>
@@ -1188,7 +1196,7 @@ const Overlay = () => {
               className="absolute inset-0 flex items-center justify-center"
             >
               <div className="flex items-center absolute left-4">
-                <RaeWatcher  isActive={isActive}/>
+                <RaeWatcher isActive={isActive} />
               </div>
 
               {/* App information in notch */}
@@ -1233,6 +1241,9 @@ const Overlay = () => {
               isPinned={isPinned}
               currentPage={currentPage}
               setCurrentPage={setCurrentPage}
+              assist={assist}
+              assistMessage={assistMessage}
+              setAssistMessage={setAssistMessage}
             />
           )}
         </AnimatePresence>

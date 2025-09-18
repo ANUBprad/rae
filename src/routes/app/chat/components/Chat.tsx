@@ -155,7 +155,7 @@ const Chat: React.FC<ChatProps> = ({
     setImagePreview(null);
     if (chatInputRef.current) {
       chatInputRef.current.value = "";
-      autosize.update(chatInputRef.current);
+      autosize.update(chatInputRef.current); 
     }
   };
 
