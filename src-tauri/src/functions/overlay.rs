@@ -322,7 +322,7 @@ pub fn toggle_magic_dot(app: AppHandle) {
 
 // Notch area constants (customize as needed)
 const NOTCH_WIDTH: i32 = 200; // Width of notch
-const NOTCH_HEIGHT: i32 = 20; // Height of notch
+const NOTCH_HEIGHT: i32 = 36; // Height of notch
 
 pub struct NotchWatcher;
 impl NotchWatcher {

@@ -15,6 +15,21 @@ export default function MainApp() {
   const followFrame = useRef<number | null>(null);
   const following = useRef(false);
 
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+
+    listen<{to: string}>("navigate_to", async (event) => {
+      console.log("triggered unlisten")
+      navigate(event.payload.to)
+    }).then((fn) => {
+      unlisten = fn;
+    })
+
+    return ( ) => {
+      if (unlisten) unlisten()
+    }
+  }, [navigate]);
+
   async function followOverlay() {
     if (!following.current) return;
 
@@ -150,14 +165,15 @@ export default function MainApp() {
               exit={{
                 height: "512px",
                 width: "480px",
+                opacity: 0,
               }}
               transition={{
                 duration: 0.3,
                 ease: "circInOut",
                 type: "tween",
                 opacity: {
-                  duration: 0,
-                },
+                  duration: 0
+                }
               }}
               className="flex  overflow-hidden rounded-lg "
             >

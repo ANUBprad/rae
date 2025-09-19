@@ -74,6 +74,8 @@ import {
   TrashIcon,
   EyeSlashIcon,
   Pencil,
+  XIcon,
+  TrashSimpleIcon,
 } from "@phosphor-icons/react";
 const MODELS = [
   { label: "OpenAi", value: "gpt-4o-mini" },
@@ -896,9 +898,9 @@ export const ChatView = ({
       onClick={() => {
         setOptionsOpen(false);
       }}
-      initial={{ y: "0%", opacity: 0 }}
-      animate={{ y: "0%", opacity: 1 }}
-      exit={{ y: "0%", opacity: 0 }}
+      initial={{  opacity: 1, y:"-100%" }}
+      animate={{  opacity: 1, y:"0%" }}
+      exit={{  opacity: 0, y:"-100%" }}
       transition={{ duration: animations.overlayChat, ease: "circInOut" }}
       ref={chatContainerRef}
       className={`no-drag flex flex-col h-screen w-full overflow-hidden relative z-[1000] rounded-xl shadow-lg mt-2 ${
@@ -1217,7 +1219,34 @@ export const ChatView = ({
               {/* Typing Icons - appear when user is typing */}
 
               <div className="h-[50px]  text-foreground bg-background relative flex items-center shrink-0">
-                <div className="h-full w-fit relative  flex items-center p-1 ">
+                <div className="h-full w-fit relative  flex items-center p-1 pr-0 ">
+                  <AnimatePresence>
+                      {imagePreview && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 1, x: "-20px" }}
+                          animate={{ opacity: 1, scale: 1, x: "0%" }}
+                          exit={{ opacity: 0, scale: 1, x: "-20px" }}
+                          transition={{duration: 0.3, ease: "circInOut"}}
+                          className="absolute bottom-full p-1 left-0"
+                        >
+                          <div onClick={() => clearImage()} className="relative group h-[90px] w-[120px] border-2 border-border hover:border-surface/40 group transition-colors cursor-pointer overflow-hidden rounded-sm flex items-center justify-center">
+                            <img
+                              src={imagePreview}
+                              alt="Attached screenshot"
+                              className="size-full object-cover absolute left-0 top-0  z-10 cursor-pointer"
+                              title="Screenshot attached - Click to remove"
+                              onClick={clearImage}
+                            />
+                              <TrashSimpleIcon weight="bold" className="z-40 text-white group-hover:opacity-100 opacity-0 transition-all" />
+                            <div
+                              
+                              className="absolute group-hover:opacity-100 opacity-0 transition-all z-30 blur-xl -bottom-1/2 left-1/2 -translate-x-1/2  rounded-full pointer-events-auto bg-surface/70 size-[90px] flex items-center justify-center"
+                            >
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   <OverlayButton
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1370,7 +1399,8 @@ export const ChatView = ({
                     <SlidersHorizontalIcon weight="bold" />
                   </OverlayButton>
                 </div>
-                <div className="w-full h-full py-1 ">
+                <div className="w-full h-full py-1 relative">
+                  
                   <div className="relative  size-full dark:bg-zinc-950 focus-within:dark:bg-zinc-950 rounded-lg transition-all duration-100 border-2 dark:border-zinc-950 focus-within:dark:border-zinc-900">
                     {/* Tool indicator */}
                     <AnimatePresence>
@@ -1409,37 +1439,7 @@ export const ChatView = ({
                     />
 
                     {/* Image attachment indicator */}
-                    <AnimatePresence>
-                      {imagePreview && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.8 }}
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                        >
-                          <div className="relative group">
-                            <img
-                              src={imagePreview}
-                              alt="Attached screenshot"
-                              className="w-6 h-6 object-cover rounded cursor-pointer"
-                              title="Screenshot attached - Click to remove"
-                              onClick={clearImage}
-                            />
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                clearImage();
-                              }}
-                              className="absolute -top-0.5 -right-0.5 bg-red-500 hover:bg-red-600 text-white rounded-full w-3 h-3 grid place-items-center text-[8px] font-bold opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-sm leading-none"
-                            >
-                              <span className="transform translate-y-[-0.5px]">
-                                ×
-                              </span>
-                            </button>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    
                   </div>
                 </div>
                 <div className="h-full w-fit  flex items-center p-1 ">

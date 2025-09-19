@@ -31,11 +31,15 @@ import { useNoteStore } from "@/store/noteStore";
 import { GetNotes } from "@/api/notes";
 import {
   ArrowElbowDownLeftIcon,
+  ChatIcon,
   CornersOutIcon,
   EarIcon,
   EarSlashIcon,
+  FileTextIcon,
+  GearSixIcon,
   MicrophoneIcon,
   PushPinIcon,
+  XIcon,
 } from "@phosphor-icons/react";
 import { useAtom } from "jotai";
 import { showAppAtom } from "@/store/appStore";
@@ -109,13 +113,13 @@ const Overlay = () => {
   const [listening, setlistening] = useState(false);
   const [assist, setAssist] = useState(false);
   const [assistMessage, setAssistMessage] = useState(
-    "Hello! Assist mode is now active. How can I help you?",
+    "Hello! Assist mode is now active. How can I help you?"
   );
   const [audioClientActive, setAudioClientActive] = useState(false);
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isActive, setIsActive] = useState<boolean>(
-    () => localStorage.getItem("overlay_active") !== "false", // Default to true if not set
+    () => localStorage.getItem("overlay_active") !== "false" // Default to true if not set
   );
   // Handler to spawn overlay-extended window
 
@@ -127,7 +131,7 @@ const Overlay = () => {
   // const [showApp, setShowApp] = useState(false)
 
   const [showGradient, setShowGradient] = useState<boolean>(
-    localStorage.getItem("gradient") === "true",
+    localStorage.getItem("gradient") === "true"
   );
   // Respect preference to stop analyzing after send
   useEffect(() => {
@@ -188,7 +192,7 @@ const Overlay = () => {
       console.log("🔄 Clearing screenshot - toggle turned off");
       console.log(
         "📸 Before clearing, windowScreenshot length:",
-        windowScreenshot.length,
+        windowScreenshot.length
       );
       setWindowScreenshot("");
       setShowScreenshot(false);
@@ -197,7 +201,7 @@ const Overlay = () => {
       // Capture screenshot immediately when toggle is turned on
       if (windowHwnd != null) {
         console.log(
-          "🔄 Capturing screenshot immediately after toggle enabled...",
+          "🔄 Capturing screenshot immediately after toggle enabled..."
         );
         console.log("📍 Current windowHwnd:", windowHwnd);
 
@@ -207,16 +211,16 @@ const Overlay = () => {
           .then((screenshot: string) => {
             console.log(
               "✅ Immediate screenshot captured, length:",
-              screenshot.length,
+              screenshot.length
             );
             if (screenshot.length > 0) {
               console.log(
                 "📸 Screenshot starts with:",
-                screenshot.substring(0, 50),
+                screenshot.substring(0, 50)
               );
               setWindowScreenshot(screenshot);
               console.log(
-                "💾 windowScreenshot state updated for chat functionality",
+                "💾 windowScreenshot state updated for chat functionality"
               );
             } else {
               console.log("❌ Screenshot captured but empty");
@@ -382,7 +386,7 @@ const Overlay = () => {
       DISABLE_NOTCH_ON_SHOW.current
     ) {
       console.log(
-        "Safety: Setting fallback notch timeout (10s) due to disabled flag",
+        "Safety: Setting fallback notch timeout (10s) due to disabled flag"
       );
       setTimeout(() => {
         if (
@@ -404,7 +408,7 @@ const Overlay = () => {
             });
         } else if (DISABLE_SAFETY_NOTCH.current) {
           console.log(
-            "Safety: Skipping notch enable - safety flag is active (recent center operation)",
+            "Safety: Skipping notch enable - safety flag is active (recent center operation)"
           );
         }
       }, 10000); // 10 second fallback
@@ -477,7 +481,7 @@ const Overlay = () => {
       listen("gradient_changed", (event) => {
         console.log(
           "OverlayCard: gradient_changed event received:",
-          event.payload,
+          event.payload
         );
         const gradient = event.payload as { gradient: boolean };
         console.log("OverlayCard: Setting showGradient to:", gradient.gradient);
@@ -511,7 +515,7 @@ const Overlay = () => {
 
     return () => {
       eventListeners.forEach((promise) =>
-        promise.then((unlisten) => unlisten()),
+        promise.then((unlisten) => unlisten())
       );
     };
   }, []);
@@ -563,7 +567,7 @@ const Overlay = () => {
         }
         setAudioClientActive(false);
         setAssistMessage(
-          "Hello! Assist mode is now active. How can I help you?",
+          "Hello! Assist mode is now active. How can I help you?"
         );
       }
     };
@@ -631,13 +635,13 @@ const Overlay = () => {
 
               if (!isRunning) {
                 console.warn(
-                  "⚠️ Audio client stopped unexpectedly, restarting...",
+                  "⚠️ Audio client stopped unexpectedly, restarting..."
                 );
                 setAssistMessage("🔄 Reconnecting audio service...");
                 await invoke("start_audio_client");
                 setTimeout(() => {
                   setAssistMessage(
-                    "🎤 Listening... Speak to interact with Rae.",
+                    "🎤 Listening... Speak to interact with Rae."
                   );
                 }, 2000);
               }
@@ -747,7 +751,7 @@ const Overlay = () => {
           isNotch,
           inputActive,
           disableNotch: DISABLE_NOTCH_ON_SHOW.current,
-        },
+        }
       );
     }
   };
@@ -886,6 +890,24 @@ const Overlay = () => {
     setInitialAttachedImage(undefined);
   };
 
+  const handleMaximizeClick = () => {
+    setIsMaximized((current) => {
+      if (current == true) {
+        // handleCloseChatClick();
+        emit("show_app", { show: false });
+        handlePinClick();
+        resize(500, 580);
+        // setShowChat(false)
+      } else {
+        // handleCloseChatClick();
+        emit("show_app", { show: true });
+        handlePinClick();
+        resize(500, 60);
+      }
+      return !current;
+    });
+  };
+
   // const [expandedChat, setExpandedChat] = useState(false);
   const [windowScreenshot, setWindowScreenshot] = useState<string>("");
   const [showScreenshot, setShowScreenshot] = useState(false);
@@ -899,7 +921,7 @@ const Overlay = () => {
       "Screenshot state changed - showScreenshot:",
       showScreenshot,
       "screenshot length:",
-      windowScreenshot.length,
+      windowScreenshot.length
     );
   }, [showScreenshot, windowScreenshot]);
 
@@ -1011,23 +1033,23 @@ const Overlay = () => {
                 borderRadius: "0 0 28px 28px",
               }
             : showChat && isMaximized
-              ? {
-                  scale: 1,
-                  y: 0,
-                  borderRadius: "0px",
-                  width: EXPANDED_WIDTH,
-                  height: "100%",
-                  x: 0,
-                  top: 0,
-                  left: 0,
-                }
-              : {
-                  scale: 1,
-                  y: 0,
-                  borderRadius: "12px",
-                  width: DEFAULT_CHAT[0],
-                  height: "100%",
-                }
+            ? {
+                scale: 1,
+                y: 0,
+                borderRadius: "0px",
+                width: EXPANDED_WIDTH,
+                height: "100%",
+                x: 0,
+                top: 0,
+                left: 0,
+              }
+            : {
+                scale: 1,
+                y: 0,
+                borderRadius: "12px",
+                width: DEFAULT_CHAT[0],
+                height: "100%",
+              }
         }
         transition={{
           type: "tween",
@@ -1238,7 +1260,9 @@ const Overlay = () => {
                     setAssist((v) => !v);
                   }}
                   active={assist}
-                  title={`Voice Assistant ${assist ? "Active" : "Inactive"} - ${audioClientActive ? "Connected" : "Disconnected"}`}
+                  title={`Voice Assistant ${assist ? "Active" : "Inactive"} - ${
+                    audioClientActive ? "Connected" : "Disconnected"
+                  }`}
                   // draggable={!isPinned}
                   className={
                     assist
@@ -1274,44 +1298,34 @@ const Overlay = () => {
                   <div className="flex h-full items-center gap-1 ">
                     {/* Navigation buttons for maximized state - centered */}
                     <OverlayButton
-                      onClick={() => setCurrentPage("chat")}
+                      onClick={() => emit("navigate_to", {to: "/app/chat"})}
                       active={currentPage === "chat"}
                       title="Chat"
                       draggable={!isPinned}
                     >
-                      <MessageSquare size={16} />
+                      <ChatIcon className="" size={16} />
                     </OverlayButton>
                     <OverlayButton
-                      onClick={() => setCurrentPage("settings")}
+                      onClick={() => emit("navigate_to", {to: "/app/settings/preferences"})}
                       active={currentPage === "settings"}
                       title="Settings"
                       draggable={!isPinned}
                     >
-                      <Settings size={16} />
+                      <GearSixIcon  size={16} />
                     </OverlayButton>
                     <OverlayButton
-                      onClick={() => setCurrentPage("notes")}
+                      onClick={() => emit("navigate_to", {to: "/app/settings/preferences"})}
                       active={currentPage === "notes"}
                       title="Notes"
                       draggable={!isPinned}
                     >
-                      <FileText size={16} />
+                      <FileTextIcon size={16} />
                     </OverlayButton>
                   </div>
                 )}
                 <OverlayButton
                   onClick={() => {
-                    setIsMaximized((current) => {
-                      if (current == true) {
-                        emit("show_app", { show: false });
-                        resize(500, 60);
-                        // setShowChat(false)
-                      } else {
-                        emit("show_app", { show: true });
-                        resize(500, 580);
-                      }
-                      return !current;
-                    });
+                    handleMaximizeClick();
                     // setIsMaximized(!isMaximized);
                   }}
                   active={isMaximized}
@@ -1319,27 +1333,34 @@ const Overlay = () => {
                   draggable={!isPinned}
                 >
                   {isMaximized ? (
-                    <Minimize2 size={16} />
+                    <Minimize2 className="text-surface" size={16} />
                   ) : (
                     <Maximize2 size={16} />
                   )}
                 </OverlayButton>
-                <OverlayButton
-                  onClick={handleCloseChatClick}
-                  title="Close chat"
-                  draggable={!isPinned}
-                >
-                  <X size={16} />
-                </OverlayButton>
+                
+                {!isMaximized && (
+                  <>
+                    <OverlayButton
+                      onClick={handleCloseChatClick}
+                      title="Close chat"
+                      draggable={!isPinned}
+                    >
+                      <XIcon weight="bold" size={16} />
+                    </OverlayButton>
+                  </>
+                )}
               </>
             ) : (
+              <>
+              
               <OverlayButton
                 onClick={handleOpenChat}
                 title="Open chat"
                 draggable={!isPinned}
               >
-                <CornersOutIcon size={16} />
-              </OverlayButton>
+                <CornersOutIcon weight="bold" size={16} />
+              </OverlayButton></>
             )}
           </div>
         </motion.div>
