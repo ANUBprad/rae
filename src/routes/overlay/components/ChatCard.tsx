@@ -14,6 +14,7 @@ import {
   Generate,
   GenerateWithWebSearch,
   GenerateWithSupermemory,
+  GenerateImage,
   BASE_URL,
 } from "@/api/chat";
 import { motion, AnimatePresence } from "framer-motion";
@@ -69,6 +70,7 @@ import {
   SlidersHorizontalIcon,
   TrashIcon,
   EyeSlashIcon,
+  Pencil,
 } from "@phosphor-icons/react";
 const MODELS = [
   { label: "OpenAi", value: "gpt-4o-mini" },
@@ -223,7 +225,7 @@ export const ChatView = ({
   const [isAIThinking, setIsAIThinking] = useState(false);
   // Removed typing animation logic
   const [isInputTyping, setIsInputTyping] = useState(false);
-  const [selectedTool, setSelectedTool] = useState<0 | 1 | 2>(0); // 0=none, 1=web search, 2=supermemory
+  const [selectedTool, setSelectedTool] = useState<0 | 1 | 2 | 4>(0); // 0=none, 1=web search, 2=supermemory, 4= image generation
   const [resetToolAfterSend, setResetToolAfterSend] = useState<boolean>(
     localStorage.getItem("overlay_reset_tool_after_send") === "false"
       ? false
@@ -626,6 +628,67 @@ export const ChatView = ({
     }
   };
 
+  const handleImageGeneration = async (
+    userMsg: string,
+    manualImage?: string,
+  ) => {
+    if (!userMsg.trim()) return;
+    const newMessages = [
+      ...messages,
+      {
+        sender: "user" as const,
+        text: userMsg,
+        image: attachedImage || windowScreenshot || "",
+      },
+    ];
+    setMessages(newMessages);
+    if (overlayConvoId === -1) setTitleLoading(true);
+
+    setIsAIThinking(true);
+
+    const imageToSend = manualImage || (isActive ? windowScreenshot : "") || "";
+
+    try {
+      const ai_res = await GenerateImage({
+        email: email,
+        message: userMsg,
+        newConvo: overlayConvoId === -1,
+        conversationId: overlayConvoId,
+        provider: currentModel.label,
+        modelName: currentModel.value,
+        image: imageToSend,
+      });
+      const updatedMessages = [
+        ...newMessages,
+        {
+          sender: "ai" as const,
+          text: ai_res.aiResponse,
+          image: ai_res.imageAi,
+        },
+      ];
+      setMessages(updatedMessages);
+      setCurrResponse(ai_res.aiResponse);
+
+      if (overlayConvoId === -1) {
+        setOverlayChatTitle(ai_res.title);
+        setOverlayConvoId(ai_res.conversationId);
+      }
+    } catch (error) {
+      console.error("Error getting web search response:", error);
+      const errorMessages = [
+        ...newMessages,
+        {
+          sender: "ai" as const,
+          text: "Sorry, I encountered an error with web search.",
+          image: "",
+        },
+      ];
+      setMessages(errorMessages);
+    } finally {
+      setTitleLoading(false);
+      setIsAIThinking(false);
+    }
+  };
   const handleSendMessage = () => {
     const userMsg = chatInputText.trim();
     if (!userMsg) return;
@@ -637,6 +700,8 @@ export const ChatView = ({
       handleWebSearch(userMsg, attachedImage || undefined);
     } else if (selectedTool === 2) {
       handleSupermemory(userMsg, attachedImage || undefined);
+    } else if (selectedTool == 4) {
+      handleImageGeneration(userMsg, attachedImage || undefined);
     } else {
       handleAIResponse(userMsg, attachedImage || undefined);
     }
@@ -1093,6 +1158,15 @@ export const ChatView = ({
                             >
                               {/* <BrainIcon className="text-lg" /> */}
                               Super Memory
+                            </Option>
+                            <Option
+                              active={selectedTool === 4}
+                              onClick={() =>
+                                setSelectedTool(selectedTool === 4 ? 0 : 4)
+                              }
+                              icon={<Pencil className="text-lg" />}
+                            >
+                              Image Generation
                             </Option>
                             <Option
                               active={stealthMode}
