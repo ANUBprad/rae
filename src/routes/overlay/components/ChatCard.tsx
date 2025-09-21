@@ -1,9 +1,8 @@
 import {
-  MouseEventHandler,
-  ReactNode,
   useEffect,
   useRef,
   useState,
+  ReactNode,
 } from "react";
 import { emit, listen } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
@@ -20,17 +19,11 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
-  Send,
-  SquareArrowOutUpRight,
-  Trash2,
-  ChevronDown,
   Loader2,
   Minimize2,
   Maximize2,
-  ArrowRight,
   Globe,
   Brain,
-  Copy,
   Image,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -42,8 +35,7 @@ import { animations } from "@/constants/animations";
 import { invoke } from "@tauri-apps/api/core";
 import { useNoteStore } from "@/store/noteStore";
 import { extractInsertableContent, InsertionContext, generateContextAwarePrompt } from "@/utils/textExtraction";
-import animatedUnscreenGif from "../../../assets/animated-gifs01-unscreen.gif";
-// OpenAI logo SVG as a data URL
+// Passing OpenAI logo SVG as a data URL
 const openaiLogo = `data:image/svg+xml;base64,${btoa(`<svg width="721" height="721" viewBox="0 0 721 721" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_1637_2934)">
 <g clip-path="url(#clip1_1637_2934)">
@@ -62,19 +54,13 @@ const openaiLogo = `data:image/svg+xml;base64,${btoa(`<svg width="721" height="7
 import { OverlayButton } from "./OverlayComponents";
 import {
   ArrowElbowDownLeftIcon,
-  ArrowsInSimpleIcon,
-  ArrowsOutSimpleIcon,
   BrainIcon,
-  CaretDoubleUpIcon,
   CheckIcon,
-  DotsThreeVerticalIcon,
-  GearSixIcon,
   GlobeSimpleIcon,
   SlidersHorizontalIcon,
   TrashIcon,
   EyeSlashIcon,
   Pencil,
-  XIcon,
   TrashSimpleIcon,
 } from "@phosphor-icons/react";
 const MODELS = [
@@ -83,18 +69,13 @@ const MODELS = [
 ];
 
 interface ChatViewProps {
-  setChatOpen: (open: boolean) => void;
   onClose: () => void;
   initialMessage?: string;
   initialAttachedImage?: string;
-  showChat?: boolean;
-  setShowChat?: (show: boolean) => void;
   smoothResize: (width: number, height: number) => void;
   windowName: string;
   windowIcon: string;
   windowHwnd: number | null;
-  expandedChat?: boolean;
-  setExpandedChat?: (expanded: boolean) => void;
   windowScreenshot?: string;
   isActive?: boolean;
   isMaximized?: boolean;
@@ -189,9 +170,6 @@ export const ChatView = ({
   onClose,
   initialMessage,
   initialAttachedImage,
-  setChatOpen,
-  showChat,
-  setShowChat,
   smoothResize,
   windowName,
   windowIcon,
@@ -225,7 +203,6 @@ export const ChatView = ({
   const [currentModel, setCurrentModel] = useState(MODELS[0]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
-  // const [expandedChat, setExpanded] = useState(false);
   const [titleLoading, setTitleLoading] = useState(false);
   const [currResponse, setCurrResponse] = useState<string>("");
   const [streamingMsg, setStreamingMsg] = useState<string>("");
@@ -1010,13 +987,6 @@ export const ChatView = ({
                       <TrashIcon weight="bold" />
                     </OverlayButton>
 
-                    {/* <OverlayButton
-
-                  onClick={onClose}
-                  title="Open in main window"
-                >
-                  <CaretDoubleUpIcon weight="bold" />
-                </OverlayButton> */}
                   </div>
                 </div>
             </div>
