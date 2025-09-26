@@ -1212,51 +1212,54 @@ export const ChatView = ({
                       )}
 
                   {/* Show image if exists */}
-                  {msg.image &&msg.image.length > 0&& (
-                    <div
-                      className="mt-2 relative inline-block"
-                      onMouseEnter={() =>
-                        msg.sender === "ai" ? setHoveredImageIndex(idx) : null
-                      }
-                      onMouseLeave={() => setHoveredImageIndex(null)}
-                    >
-                      <img
-                        src={msg.image[0]}
-                        alt={
-                          msg.sender === "user"
-                            ? "User uploaded"
-                            : "AI generated"
-                        }
-                        className={`w-[200px] rounded-lg transition-all duration-200 ${
-                          msg.sender === "ai"
-                            ? "cursor-pointer hover:scale-[1.02] hover:shadow-lg"
-                            : ""
-                        }`}
-                      />
+                  {msg.image && msg.image.filter((img: string) => img.trim() !== "").length > 0 && (
+  <div className="mt-2 flex flex-col gap-2">
+    {msg.image
+      .filter((img: string) => img.trim() !== "")
+      .map((img: string, imgIdx: number) => (
+        <div
+          key={imgIdx}
+          className="relative inline-block"
+          onMouseEnter={() =>
+            msg.sender === "ai" ? setHoveredImageIndex(idx) : null
+          }
+          onMouseLeave={() => setHoveredImageIndex(null)}
+        >
+          <img
+            src={img}
+            alt={msg.sender === "user" ? "User uploaded" : "AI generated"}
+            className={`max-w-full rounded-lg border border-gray-300 transition-all duration-200 ${
+              msg.sender === "ai"
+                ? "cursor-pointer hover:scale-[1.02] hover:shadow-lg"
+                : ""
+            }`}
+          />
 
-                      {/* Hover overlay with reference button for AI images */}
-                      {msg.sender === "ai" && hoveredImageIndex === idx && (
-                        <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center transition-all duration-200 animate-in fade-in-0">
-                          <button
-                            onClick={() => handleReferenceImage(msg.image[0])}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105 text-sm font-medium shadow-lg transform ${
-                              selectedTool === 4
-                                ? "bg-blue-500 text-white hover:bg-blue-600 hover:shadow-xl"
-                                : "bg-white text-black hover:bg-gray-100 hover:shadow-xl"
-                            }`}
-                            title={
-                              selectedTool === 4
-                                ? "Use this image for further modifications"
-                                : "Reference this image in your next message"
-                            }
-                          >
-                            <Image size={16} />
-                            {selectedTool === 4 ? "Modify" : "Reference"}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
+          {/* Hover overlay only for AI images */}
+          {msg.sender === "ai" && hoveredImageIndex === idx && (
+            <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center transition-all duration-200 animate-in fade-in-0">
+              <button
+                onClick={() => handleReferenceImage(img)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105 text-sm font-medium shadow-lg transform ${
+                  selectedTool === 4
+                    ? "bg-blue-500 text-white hover:bg-blue-600 hover:shadow-xl"
+                    : "bg-white text-black hover:bg-gray-100 hover:shadow-xl"
+                }`}
+                title={
+                  selectedTool === 4
+                    ? "Use this image for further modifications"
+                    : "Reference this image in your next message"
+                }
+              >
+                <Image size={16} />
+                {selectedTool === 4 ? "Modify" : "Reference"}
+              </button>
+            </div>
+          )}
+        </div>
+      ))}
+  </div>
+)}
                     </div>
                   </div>
                 </div>
