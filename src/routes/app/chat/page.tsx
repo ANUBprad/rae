@@ -235,7 +235,7 @@ export default function ChatWindow() {
           conversationId: currentConvoId,
           provider: currentModel.label,
           modelName: currentModel.value,
-          image: imageToSend,
+          image: [imageToSend],
         });
         let updatedMessages = [
           ...newMessages,
@@ -261,7 +261,7 @@ export default function ChatWindow() {
           conversationId: currentConvoId,
           provider: currentModel.label,
           modelName: currentModel.value,
-          image: imageToSend,
+          image: [imageToSend],
         });
         let updatedMessages = [
           ...newMessages,
@@ -288,7 +288,7 @@ export default function ChatWindow() {
           conversationId: currentConvoId,
           provider: currentModel.label,
           modelName: currentModel.value,
-          image: imageToSend,
+          image: [imageToSend],
         });
         let updatedMessages = [
           ...newMessages,
@@ -411,7 +411,7 @@ export default function ChatWindow() {
         conversationId: currentConvoId,
         provider: currentModel.label,
         modelName: currentModel.value,
-        image: manualImage || "",
+        image:  manualImage ? [manualImage] : [""],
       });
       let updatedMessages = [
         ...newMessages,

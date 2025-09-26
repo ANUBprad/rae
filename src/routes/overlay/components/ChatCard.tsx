@@ -465,7 +465,7 @@ export const ChatView = ({
           conversationId: overlayConvoId,
           provider: currentModel.label,
           modelName: currentModel.value,
-          image: imageToSend,
+          image: [imageToSend],
         });
 
         const updatedMessages = [
@@ -636,7 +636,7 @@ export const ChatView = ({
         conversationId: overlayConvoId,
         provider: currentModel.label,
         modelName: currentModel.value,
-        image: imageToSend,
+        image: [imageToSend],
       });
 
       const updatedMessages = [
@@ -703,7 +703,7 @@ export const ChatView = ({
         conversationId: overlayConvoId,
         provider: currentModel.label,
         modelName: currentModel.value,
-        image: imageToSend,
+        image: [imageToSend],
       });
 
       const updatedMessages = [
@@ -763,7 +763,7 @@ export const ChatView = ({
         conversationId: overlayConvoId,
         provider: currentModel.label,
         modelName: currentModel.value,
-        image: imageToSend,
+        image: [imageToSend],
       });
       const updatedMessages = [
         ...newMessages,
