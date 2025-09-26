@@ -5,8 +5,8 @@
 
 import axios from "axios";
 
-// export const BASE_URL = "https://quackback-xwhd.onrender.com/api";
-export const BASE_URL = "http://localhost:8000/api";
+export const BASE_URL = "https://quackback-xwhd.onrender.com/api";
+// export const BASE_URL = "http://localhost:8000/api";
 export const Generate = async ({
   email,
   message,
@@ -53,7 +53,7 @@ export const GenerateWithWebSearch = async ({
   conversationId,
   provider,
   modelName,
-  image = "",
+  image = [""],
 }): Promise<any> => {
   return Generate({
     email,
@@ -75,7 +75,7 @@ export const GenerateWithSupermemory = async ({
   conversationId,
   provider,
   modelName,
-  image = "",
+  image = [""],
 }): Promise<any> => {
   return Generate({
     email,
@@ -95,7 +95,7 @@ export const GenerateImage = async ({
   conversationId,
   provider,
   modelName,
-  image = "",
+  image = [""],
 }): Promise<any> => {
   return Generate({
     email,
