@@ -221,6 +221,19 @@ export const ChatView = ({
   );
   // Multi-image support
   const [attachedImages, setAttachedImages] = useState<string[]>([]);
+
+  // Helper to get the images to preview/send, always including windowScreenshot if isActive (analysis mode)
+  const getImagesToSend = () => {
+    let imgs = attachedImages;
+    // If analysis is on and windowScreenshot exists, ensure it's included (but not duplicated)
+    if (isActive && windowScreenshot) {
+      if (!imgs.includes(windowScreenshot)) {
+        imgs = [windowScreenshot, ...imgs];
+      }
+    }
+    // Limit to 3 images
+    return imgs.slice(0, 3);
+  };
   const [stealthMode, setStealthMode] = useState<boolean>(false);
   const [lastImage, setLastImage] = useState<string>("");
   const [hoveredImageIndex, setHoveredImageIndex] = useState<number | null>(
@@ -393,7 +406,7 @@ export const ChatView = ({
 
   const handleAIResponse = async (userMsg: string, manualImage?: string) => {
     if (userMsg.trim() === "") return;
-    const imagesToSend = manualImage ? [manualImage] : attachedImages.length > 0 ? attachedImages : (windowScreenshot ? [windowScreenshot] : []);
+  const imagesToSend = manualImage ? [manualImage] : getImagesToSend();
     // Create context for smart AI prompting
     const insertionContext: InsertionContext = {
       windowName,
@@ -598,7 +611,7 @@ export const ChatView = ({
       windowScreenshot: windowScreenshot || undefined,
     };
     const contextAwareMessage = generateContextAwarePrompt(userMsg, insertionContext);
-    const imagesToSend = manualImage ? [manualImage] : attachedImages.length > 0 ? attachedImages : (windowScreenshot ? [windowScreenshot] : []);
+  const imagesToSend = manualImage ? [manualImage] : getImagesToSend();
     const newMessages = [
       ...messages,
       {
@@ -658,7 +671,7 @@ export const ChatView = ({
       windowScreenshot: windowScreenshot || undefined,
     };
     const contextAwareMessage = generateContextAwarePrompt(userMsg, insertionContext);
-    const imagesToSend = manualImage ? [manualImage] : attachedImages.length > 0 ? attachedImages : (windowScreenshot ? [windowScreenshot] : []);
+  const imagesToSend = manualImage ? [manualImage] : getImagesToSend();
     const newMessages = [
       ...messages,
       {
@@ -712,7 +725,7 @@ export const ChatView = ({
     manualImage?: string,
   ) => {
     if (!userMsg.trim()) return;
-    const imagesToSend = manualImage ? [manualImage] : attachedImages.length > 0 ? attachedImages : (windowScreenshot ? [windowScreenshot] : []);
+  const imagesToSend = manualImage ? [manualImage] : getImagesToSend();
     const newMessages = [
       ...messages,
       {
@@ -1344,7 +1357,7 @@ export const ChatView = ({
               <div className="h-[50px]  text-foreground bg-background relative flex items-center shrink-0">
                 <div className="h-full w-fit relative  flex items-center p-1 pr-0 ">
                   <AnimatePresence>
-                    {attachedImages.length > 0 && (
+                    {getImagesToSend().length > 0 && (
                       <motion.div
                         initial={{ opacity: 0, scale: 1, x: "-20px" }}
                         animate={{ opacity: 1, scale: 1, x: "0%" }}
@@ -1352,20 +1365,27 @@ export const ChatView = ({
                         transition={{ duration: 0.3, ease: "circInOut" }}
                         className="absolute bottom-full p-1 left-0 flex gap-2"
                       >
-                        {attachedImages.map((img, idx) => (
+                        {getImagesToSend().map((img, idx) => (
                           <div
                             key={idx}
-                            onClick={() => clearImage(idx)}
+                            onClick={() => {
+                              // Only allow removing user-attached images, not windowScreenshot if analysis is on
+                              if (isActive && windowScreenshot && img === windowScreenshot) return;
+                              clearImage(idx);
+                            }}
                             className="relative group h-[90px] w-[120px] border-2 border-border hover:border-surface/40 group transition-colors cursor-pointer overflow-hidden rounded-sm flex items-center justify-center"
                           >
                             <img
                               src={img}
                               alt={`Attached screenshot ${idx + 1}`}
                               className="size-full object-cover absolute left-0 top-0  z-10 cursor-pointer"
-                              title={`Screenshot ${idx + 1} attached - Click to remove`}
-                              onClick={() => clearImage(idx)}
+                              title={`Screenshot ${idx + 1} attached${isActive && windowScreenshot && img === windowScreenshot ? ' (analysis)' : ''}${isActive && windowScreenshot && img === windowScreenshot ? ' (cannot remove)' : ' - Click to remove'}`}
+                              onClick={() => {
+                                if (isActive && windowScreenshot && img === windowScreenshot) return;
+                                clearImage(idx);
+                              }}
                             />
-                            <TrashSimpleIcon weight="bold" className="z-40 text-white group-hover:opacity-100 opacity-0 transition-all" />
+                            <TrashSimpleIcon weight="bold" className={`z-40 text-white group-hover:opacity-100 opacity-0 transition-all${isActive && windowScreenshot && img === windowScreenshot ? ' hidden' : ''}`} />
                             <div
                               className="absolute group-hover:opacity-100 opacity-0 transition-all z-30 blur-xl -bottom-1/2 left-1/2 -translate-x-1/2  rounded-full pointer-events-auto bg-surface/70 size-[90px] flex items-center justify-center"
                             ></div>
