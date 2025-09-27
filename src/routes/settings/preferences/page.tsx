@@ -244,13 +244,6 @@ const Preferences = () => {
         <Card>
           <SectionHeader title="Appearance" />
           <div className="divide-y divide-border">
-            {/* <ToggleRow
-              label="Dark theme"
-              enabled={darkTheme}
-              onToggle={async (next) => {
-                setDarkTheme(next);
-              }}
-            /> */}
             <ToggleRow
               label="Gradient in notch"
               enabled={gradient}
@@ -277,6 +270,11 @@ const Preferences = () => {
                 } catch (_) {}
               }}
             />
+          </div>
+        </Card>
+        <Card>
+          <SectionHeader title="Sound" />
+          <div className="divide-y divide-border">
             <ToggleRow
               label="Enable/Disable notch sound"
               enabled={bubbleSoundEnabled}
@@ -286,13 +284,6 @@ const Preferences = () => {
                 emit("bubble_sound_enabled_changed", { enabled: next });
               }}
             />
-            {/* <ToggleRow
-              label="Gradient in notch"
-              enabled={darkTheme}
-              onToggle={async (next) => {
-                setDarkTheme(next);
-              }}
-            /> */}
           </div>
         </Card>
       </div>
