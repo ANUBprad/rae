@@ -460,7 +460,6 @@ const Overlay = () => {
   useEffect(() => {
     const eventListeners = [
       listen("disable_notch_on_show", () => {
-        console.log("Disabling notch on show");
         DISABLE_NOTCH_ON_SHOW.current = true;
         setIsNotch(false);
         if (notchTimeoutRef.current) {
@@ -470,7 +469,6 @@ const Overlay = () => {
       }),
 
       listen("disable_pin_on_show", () => {
-        console.log("Disabling auto-pin on show");
         DISABLE_PIN_ON_SHOW.current = true;
         setIsPinned(false);
       }),
@@ -485,15 +483,12 @@ const Overlay = () => {
 
 
       listen("toggle_pin_state", () => {
-        console.log("OverlayCard: Received toggle_pin_state event");
         // Reset notch disable flag when using Ctrl+P to ensure proper 2s timeout
         DISABLE_NOTCH_ON_SHOW.current = false;
-        console.log("Ctrl+P: Reset notch disable flag for proper 2s timeout");
         handlePinClick();
       }),
 
       listen("center_overlay_bar", () => {
-        console.log("OverlayCard: Received center_overlay_bar event");
         DISABLE_SAFETY_NOTCH.current = true;
         // Reset after a reasonable time (30 seconds)
         setTimeout(() => {
@@ -503,7 +498,6 @@ const Overlay = () => {
 
       // Listen for main window close to clean up overlay
       listen("main-window-closed", () => {
-        console.log("OverlayCard: Main window closed, cleaning up overlay...");
         // Clean up any overlay-specific state here if needed
         // The backend will handle closing the overlay window
       }),
@@ -789,14 +783,10 @@ const Overlay = () => {
         // Reset both disable flags when user manually pins
         DISABLE_PIN_ON_SHOW.current = false;
         DISABLE_NOTCH_ON_SHOW.current = false;
-        console.log("Pin: Reset notch disable flag for proper timing");
       }
       const newPinned = !prev;
       if (!newPinned) {
         setIsNotch(false);
-        console.log("Unpinned magic dot");
-      } else {
-        console.log("Pinning magic dot...");
       }
       if (notchTimeoutRef.current) {
         clearTimeout(notchTimeoutRef.current);
@@ -842,12 +832,6 @@ const Overlay = () => {
 
     // Store the attached image before clearing it
     const imageToSend = attachedImage;
-
-    console.log("🎯 Overlay: Sending message with image:", {
-      message: userMsg,
-      hasImage: !!imageToSend,
-      imageLength: imageToSend?.length || 0,
-    });
 
     setChatOpen(true);
     setShowChat(true);
@@ -999,17 +983,14 @@ const Overlay = () => {
   };
 
   const handleScreenshotLeave = () => {
-    console.log("Left trigger area");
     setIsHoveringTrigger(false);
   };
 
   const handleTooltipHover = () => {
-    console.log("Hovering over tooltip");
     setIsHoveringScreenshot(true);
   };
 
   const handleTooltipLeave = () => {
-    console.log("Left tooltip area");
     setIsHoveringScreenshot(false);
   };
 
@@ -1212,7 +1193,7 @@ const Overlay = () => {
                       src={windowScreenshot}
                       alt="Window screenshot"
                       className="min-w-[250px] max-h-[350px] rounded shadow-md"
-                      onLoad={() => console.log(" Image loaded successfully")}
+                      onLoad={() => {}}
                       onError={(e) =>
                         console.error("Image failed to load:", e)
                       }
