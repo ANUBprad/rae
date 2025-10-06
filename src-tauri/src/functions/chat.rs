@@ -235,13 +235,6 @@ fn ensure_rae_watcher_started(app: &AppHandle) {
         #[cfg(target_os = "windows")]
         unsafe {
             use std::collections::VecDeque;
-            use winapi::shared::minwindef::{HINSTANCE, LPARAM, LRESULT, WPARAM};
-            use winapi::shared::windef::HHOOK;
-            use winapi::um::winuser::{
-                CallNextHookEx, DispatchMessageW, PeekMessageW, SetWindowsHookExW,
-                TranslateMessage, UnhookWindowsHookEx, HC_ACTION, KBDLLHOOKSTRUCT, MSG, PM_REMOVE,
-                WH_KEYBOARD_LL, WM_KEYDOWN, WM_QUIT, WM_SYSKEYDOWN,
-            };
 
             let mut typed_chars = VecDeque::new();
             let mut last_key_time = std::time::Instant::now();
@@ -251,15 +244,6 @@ fn ensure_rae_watcher_started(app: &AppHandle) {
             // Store a reference to check if watcher is still enabled
             let _watcher_enabled = &RAE_WATCHER_ENABLED;
             let app_for_emit = app_handle.clone();
-
-            unsafe extern "system" fn keyboard_hook_proc(
-                code: i32,
-                wparam: WPARAM,
-                lparam: LPARAM,
-            ) -> LRESULT {
-                // We can't access the VecDeque from here easily, so let's redesign this
-                CallNextHookEx(std::ptr::null_mut(), code, wparam, lparam)
-            }
 
             println!("Starting rae watcher with improved polling...");
 

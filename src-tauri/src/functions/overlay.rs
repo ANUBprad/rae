@@ -1,16 +1,13 @@
 use crate::utils::{smooth_move, smooth_resize, get_monitor_by_window_position};
 use enigo::{Enigo, MouseControllable};
-use window_vibrancy::{apply_acrylic, clear_acrylic, clear_blur};
+use window_vibrancy::clear_acrylic;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Instant;
 use tauri::{
     utils::config::WindowEffectsConfig,
-    window::{Effect, EffectsBuilder},
+    window::Effect,
     AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder,
 };
-
-// Import stealth functions
-use super::stealth::apply_stealth_mode_to_window;
 
 // Controls whether toggle_magic_dot is allowed to create the window
 static ALLOW_MAGIC_DOT_CREATE: AtomicBool = AtomicBool::new(true);
@@ -40,7 +37,6 @@ pub fn follow_magic_dot(app: AppHandle) {
 #[tauri::command]
 pub fn pin_magic_dot(app: AppHandle) {
     if let Some(window) = app.get_webview_window("overlay") {
-        println!("Pinning magic dot");
         // clear_blur(&window);
         // clear_acrylic(&window);
 
@@ -215,12 +211,8 @@ pub fn center_overlay_bar(app: AppHandle) {
 #[tauri::command]
 pub fn toggle_pin_overlay(app: AppHandle) {
     if let Some(window) = app.get_webview_window("overlay") {
-        println!("toggle_pin_overlay: Toggling pin state");
         // Emit event to frontend to toggle pin state
         let _ = window.emit("toggle_pin_state", ());
-        println!("toggle_pin_overlay: Emitted toggle_pin_state event");
-    } else {
-        println!("toggle_pin_overlay: Could not find overlay window");
     }
 }
 
@@ -383,7 +375,7 @@ pub fn start_notch_watcher(app: AppHandle) {
 pub fn enable_notch(app: AppHandle) {
     if let Some(window) = app.get_webview_window("overlay") {
         // println!("Enabling notch");
-        clear_acrylic(&window);
+        let _ = clear_acrylic(&window);
         let _ = window.set_ignore_cursor_events(true);
     }
 }
@@ -391,7 +383,6 @@ pub fn enable_notch(app: AppHandle) {
 #[tauri::command]
 pub fn enable_mouse_events(app: AppHandle) {
     if let Some(window) = app.get_webview_window("overlay") {
-        println!("Enabling mouse events");
         let _ = window.set_ignore_cursor_events(false);
     }
 }

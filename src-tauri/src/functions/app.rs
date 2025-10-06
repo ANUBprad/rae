@@ -1,4 +1,4 @@
-use tauri::{AppHandle, LogicalPosition, Manager, Position, Runtime};
+use tauri::{AppHandle, LogicalPosition, Manager};
 
 #[tauri::command]
 pub fn show_app(app: AppHandle) {

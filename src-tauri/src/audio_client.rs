@@ -9,7 +9,7 @@ use serde_json::json;
 use base64::{Engine, engine::general_purpose};
 use tauri::{AppHandle, Emitter};
 
-pub struct AudioState(pub Mutex<bool>);
+pub struct AudioState;
 
 static AUDIO_CLIENT_RUNNING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 

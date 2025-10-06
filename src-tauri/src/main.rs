@@ -15,7 +15,6 @@ use tauri::menu::{Menu, MenuItemBuilder};
 use tauri::tray::{MouseButton, TrayIconBuilder, TrayIconEvent};
 use tauri::Manager;
 use tauri::State;
-use tauri_plugin_global_shortcut::GlobalShortcutExt;
 
 struct TrayState(Mutex<bool>);
 
@@ -134,7 +133,7 @@ fn main() {
         .setup(|app| {
             let app_handle = app.handle().clone();
             app.manage(TrayState(Mutex::new(false)));
-app.manage(AudioState(Mutex::new(false)));
+    app.manage(AudioState);
             // Log startup time for debugging
             println!(
                 "Rae app started successfully at {:?}",
