@@ -26,27 +26,21 @@ interface SearchSite {
 }
 
 export const WebSearchAnimation = ({ isSearching, searchQuery, isResponseStreaming = false, onSearchSiteFound }: WebSearchAnimationProps) => {
-  console.log("WebSearchAnimation rendered:", { isSearching, searchQuery, isResponseStreaming });
   const [currentSiteIndex, setCurrentSiteIndex] = useState(0);
   const [realSearchSites, setRealSearchSites] = useState<SearchSite[]>([]);
   const [usingRealData, setUsingRealData] = useState(false);
 
   // Add a site from real search results
   const addRealSearchSite = (site: SearchSite) => {
-    console.log("addRealSearchSite called with:", site);
-    console.log("Favicon URL:", site.favicon);
     setRealSearchSites(prev => {
       const exists = prev.find(s => s.domain === site.domain);
       if (!exists) {
-        console.log("Adding real site:", site.site, "with favicon:", site.favicon);
         // Replace demo sites with real ones as they come in
         const newSites = [...prev, site];
         // Set to show the newly added site
         setCurrentSiteIndex(newSites.length - 1);
         setUsingRealData(true);
         return newSites;
-      } else {
-        console.log("Site already exists:", site.site);
       }
       return prev;
     });
@@ -54,7 +48,6 @@ export const WebSearchAnimation = ({ isSearching, searchQuery, isResponseStreami
 
   // Expose the addRealSearchSite function to parent
   React.useEffect(() => {
-    console.log("Setting up addRealSearchSite on window");
     (window as any).addRealSearchSite = addRealSearchSite;
 
     // Cleanup function to remove from window when component unmounts
@@ -146,9 +139,7 @@ export const WebSearchAnimation = ({ isSearching, searchQuery, isResponseStreami
                           src={site.favicon}
                           alt={site.site}
                           className="size-full object-contain"
-                          onLoad={() => console.log("Favicon loaded successfully:", site.favicon)}
                           onError={(e) => {
-                            console.error("Favicon failed to load:", site.favicon, "falling back to generic icon");
                             // Fallback to the generic icon if favicon fails to load
                             (e.target as HTMLImageElement).src = GENERIC_SITE_ICON;
                           }}
