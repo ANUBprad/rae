@@ -153,19 +153,15 @@ pub fn center_magic_dot(app: AppHandle) {
 #[tauri::command]
 pub fn center_overlay_bar(app: AppHandle) {
     if let Some(window) = app.get_webview_window("overlay") {
-        println!("center_overlay_bar: Starting centering process");
-
         // Emit events to unpin and disable notch mode first
         let _ = window.emit("disable_pin_on_show", ());
         let _ = window.emit("disable_notch_on_show", ());
         let _ = window.emit("center_overlay_bar", ());
-        println!("center_overlay_bar: Emitted disable events and center notification");
 
         // Show the window if it's hidden
         let _ = window.show();
         let _ = window.set_focus();
         let _ = window.set_always_on_top(true);
-        println!("center_overlay_bar: Window shown and focused");
 
         // Make sure it's not in notch mode by enabling mouse events
         let _ = window.set_ignore_cursor_events(false);
@@ -180,12 +176,10 @@ pub fn center_overlay_bar(app: AppHandle) {
         ) {
             if let Some(monitor) = get_monitor_by_window_position(&window, &app) {
                 let monitor_pos = monitor.position();
-                println!("center_overlay_bar: Current size: {}x{}", size.width, size.height);
                 let screen = monitor.size();
                 let x = monitor_pos.x + ((screen.width as i32 - size.width as i32) / 2).max(0);
                 let y = monitor_pos.y + ((screen.height as i32 - size.height as i32) / 2).max(0);
 
-                println!("center_overlay_bar: Centering to position: ({}, {})", x, y);
                 let target_pos = tauri::PhysicalPosition { x, y };
                 smooth_move(
                     &window,
@@ -194,17 +188,10 @@ pub fn center_overlay_bar(app: AppHandle) {
                     16,  // More steps for smoother animation
                     8,   // Shorter delay for fluid motion
                 );
-            } else {
-                println!("center_overlay_bar: Failed to get monitor for window position");
             }
-        } else {
-            println!("center_overlay_bar: Failed to get size/position");
         }
 
         // Don't start notch watcher when centering - we want bar mode, not notch mode
-        println!("center_overlay_bar: Completed centering process (bar mode)");
-    } else {
-        println!("center_overlay_bar: Could not find overlay window");
     }
 }
 
@@ -240,7 +227,6 @@ pub fn toggle_magic_dot(app: AppHandle) {
                     unsafe {
                         LAST_OVERLAY_POSITION = Some(current_pos);
                     }
-                    println!("toggle_magic_dot: Saved position ({}, {}) before hiding", current_pos.x, current_pos.y);
                 }
                 let _ = dot.hide();
             }
@@ -254,7 +240,6 @@ pub fn toggle_magic_dot(app: AppHandle) {
                 // Restore to last saved position, or center if no saved position
                 unsafe {
                     if let Some(saved_pos) = LAST_OVERLAY_POSITION {
-                        println!("toggle_magic_dot: Restoring to saved position ({}, {})", saved_pos.x, saved_pos.y);
                         let _ = dot.set_position(tauri::Position::Physical(saved_pos));
                     } else {
                         // Fallback to centering if no saved position
@@ -461,7 +446,6 @@ pub fn set_magic_dot_creation_enabled(enabled: bool) {
 #[tauri::command]
 pub fn close_overlay_window(app: AppHandle) {
     if let Some(window) = app.get_webview_window("overlay") {
-        println!("Closing overlay window...");
         let _ = window.close();
     }
 }

@@ -245,12 +245,9 @@ fn ensure_rae_watcher_started(app: &AppHandle) {
             let _watcher_enabled = &RAE_WATCHER_ENABLED;
             let app_for_emit = app_handle.clone();
 
-            println!("Starting rae watcher with improved polling...");
-
             // Improved polling approach with better key detection
             loop {
                 if !RAE_WATCHER_ENABLED.load(Ordering::Relaxed) {
-                    println!("Rae watcher disabled, stopping...");
                     break;
                 }
 
@@ -365,7 +362,6 @@ pub fn get_auto_show_on_selection_enabled() -> bool {
 
 #[tauri::command]
 pub fn set_rae_watcher_enabled(app: AppHandle, enabled: bool) {
-    println!("Setting rae watcher enabled: {}", enabled);
     RAE_WATCHER_ENABLED.store(enabled, Ordering::Relaxed);
     if enabled {
         ensure_rae_watcher_started(&app);
