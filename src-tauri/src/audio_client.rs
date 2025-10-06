@@ -8,6 +8,7 @@ use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use serde_json::json;
 use base64::{Engine, engine::general_purpose};
 use tauri::{AppHandle, Emitter};
+use tracing::{info, warn, error, debug};
 
 pub struct AudioState;
 
@@ -74,11 +75,11 @@ pub async fn run_audio_client(app_handle: AppHandle) {
     let url = "ws://localhost:8000/ws/realtime";
     let (ws_stream, _) = match connect_async(url).await {
         Ok((stream, response)) => {
-            println!("✅ WebSocket connected to {}", url);
+            info!("WebSocket connected to {}", url);
             (stream, response)
         }
         Err(e) => {
-            eprintln!("❌ Failed to connect to WebSocket: {}", e);
+            error!("Failed to connect to WebSocket: {}", e);
             return;
         }
     };
@@ -93,11 +94,11 @@ pub async fn run_audio_client(app_handle: AppHandle) {
     let host = cpal::default_host();
     let device = match host.default_output_device() {
         Some(device) => {
-            println!("🔊 Using system audio device: {}", device.name().unwrap_or("Unknown".to_string()));
+            info!("Using system audio device: {}", device.name().unwrap_or("Unknown".to_string()));
             device
         }
         None => {
-            eprintln!("❌ No system audio device available");
+            error!("No system audio device available");
             AUDIO_CLIENT_RUNNING.store(false, std::sync::atomic::Ordering::Relaxed);
             return;
         }
@@ -106,14 +107,14 @@ pub async fn run_audio_client(app_handle: AppHandle) {
     let config = match device.default_output_config() {
         Ok(config) => config,
         Err(e) => {
-            eprintln!("❌ Failed to get device config: {}", e);
+            error!("Failed to get device config: {}", e);
             AUDIO_CLIENT_RUNNING.store(false, std::sync::atomic::Ordering::Relaxed);
             return;
         }
     };
 
     let sample_rate = config.sample_rate().0;
-    println!("🔧 Audio config: {} channels, {} Hz, {:?}", config.channels(), sample_rate, config.sample_format());
+    info!("Audio config: {} channels, {} Hz, {:?}", config.channels(), sample_rate, config.sample_format());
 
     // Create audio stream (matching React audio processing)
     let buffer_clone = buffer.clone();
@@ -124,11 +125,11 @@ pub async fn run_audio_client(app_handle: AppHandle) {
                 let mut buf = buffer_clone.lock().unwrap();
                 buf.extend_from_slice(data);
             },
-            move |err| eprintln!("❌ Stream error: {:?}", err),
+            move |err| error!("Stream error: {:?}", err),
             None,
         ),
         _ => {
-            eprintln!("❌ Unsupported format: {:?}", config.sample_format());
+            error!("Unsupported format: {:?}", config.sample_format());
             AUDIO_CLIENT_RUNNING.store(false, std::sync::atomic::Ordering::Relaxed);
             return;
         }
@@ -137,14 +138,14 @@ pub async fn run_audio_client(app_handle: AppHandle) {
     let stream = match stream {
         Ok(s) => s,
         Err(e) => {
-            eprintln!("❌ Failed to build audio stream: {}", e);
+            error!("Failed to build audio stream: {}", e);
             AUDIO_CLIENT_RUNNING.store(false, std::sync::atomic::Ordering::Relaxed);
             return;
         }
     };
 
     if let Err(e) = stream.play() {
-        eprintln!("❌ Failed to start audio stream: {}", e);
+        error!("Failed to start audio stream: {}", e);
         AUDIO_CLIENT_RUNNING.store(false, std::sync::atomic::Ordering::Relaxed);
         return;
     }
@@ -185,7 +186,7 @@ pub async fn run_audio_client(app_handle: AppHandle) {
             let message = json!({ "audio": base64_audio });
 
             if let Err(e) = write_clone.send(Message::text(message.to_string())).await {
-                eprintln!("❌ Failed to send audio data: {}", e);
+                error!("Failed to send audio data: {}", e);
                 AUDIO_CLIENT_RUNNING.store(false, std::sync::atomic::Ordering::Relaxed);
                 break;
             }
@@ -205,7 +206,7 @@ pub async fn run_audio_client(app_handle: AppHandle) {
                     match data["type"].as_str() {
                         Some("response.text.delta") => {
                             let delta_text = data["delta"].as_str().unwrap_or("");
-                            println!("📝 Delta: {}", delta_text);
+                            debug!("Audio delta: {}", delta_text);
                             let response_data = json!({
                                 "type": "response.text.delta",
                                 "delta": delta_text
@@ -214,7 +215,7 @@ pub async fn run_audio_client(app_handle: AppHandle) {
                         }
                         Some("response.text.done") => {
                             let final_text = data["text"].as_str().unwrap_or("");
-                            println!("✅ Final: {}", final_text);
+                            debug!("Audio final: {}", final_text);
                             let response_data = json!({
                                 "type": "response.text.done",
                                 "text": final_text
@@ -222,7 +223,7 @@ pub async fn run_audio_client(app_handle: AppHandle) {
                             let _ = app_handle.emit("audio_response", response_data);
                         }
                         Some("error") => {
-                            eprintln!("❌ Backend error: {}", data["error"]);
+                            error!("Backend error: {}", data["error"]);
                         }
                         _ => {}
                     }
@@ -230,7 +231,7 @@ pub async fn run_audio_client(app_handle: AppHandle) {
             }
             Ok(_) => {}
             Err(e) => {
-                eprintln!("❌ WebSocket error: {}", e);
+                error!("WebSocket error: {}", e);
                 break;
             }
         }

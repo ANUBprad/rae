@@ -15,6 +15,8 @@ use tauri::menu::{Menu, MenuItemBuilder};
 use tauri::tray::{MouseButton, TrayIconBuilder, TrayIconEvent};
 use tauri::Manager;
 use tauri::State;
+use tracing::{info, Level};
+use tracing_subscriber::FmtSubscriber;
 
 struct TrayState(Mutex<bool>);
 
@@ -123,6 +125,13 @@ fn create_tray(app: tauri::AppHandle, tray_state: State<TrayState>) {
 }
 
 fn main() {
+    // Initialize tracing subscriber for structured logging
+    let subscriber = FmtSubscriber::builder()
+        .with_max_level(Level::INFO)
+        .finish();
+    tracing::subscriber::set_global_default(subscriber)
+        .expect("setting default subscriber failed");
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
@@ -134,11 +143,8 @@ fn main() {
             let app_handle = app.handle().clone();
             app.manage(TrayState(Mutex::new(false)));
     app.manage(AudioState);
-            // Log startup time for debugging
-            println!(
-                "Rae app started successfully at {:?}",
-                std::time::Instant::now()
-            );
+            // Log successful startup
+            info!("Rae app started successfully");
 
             // Create tray immediately on startup
             {

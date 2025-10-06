@@ -270,7 +270,6 @@ fn ensure_rae_watcher_started(app: &AppHandle) {
                     && now.duration_since(last_key_time) > std::time::Duration::from_secs(3)
                 {
                     typed_chars.clear();
-                    println!("Sequence timeout, resetting...");
                 }
 
                 // Detect @ symbol (only when first typed)
@@ -278,7 +277,6 @@ fn ensure_rae_watcher_started(app: &AppHandle) {
                     typed_chars.clear();
                     typed_chars.push_back('@');
                     last_key_time = now;
-                    println!("Detected @ - starting sequence");
                 }
                 // Detect r after @
                 else if !typed_chars.is_empty()
@@ -288,7 +286,6 @@ fn ensure_rae_watcher_started(app: &AppHandle) {
                 {
                     typed_chars.push_back('r');
                     last_key_time = now;
-                    println!("Detected @r");
                 }
                 // Detect a after @r
                 else if !typed_chars.is_empty()
@@ -298,7 +295,6 @@ fn ensure_rae_watcher_started(app: &AppHandle) {
                 {
                     typed_chars.push_back('a');
                     last_key_time = now;
-                    println!("Detected @ra");
                 }
                 // Detect e after @ra - this completes @rae
                 else if !typed_chars.is_empty()
@@ -309,7 +305,6 @@ fn ensure_rae_watcher_started(app: &AppHandle) {
                     typed_chars.push_back('e');
                     let sequence: String = typed_chars.iter().collect();
                     if sequence == "@rae" {
-                        println!("RAE DETECTED! Emitting event...");
                         let _ = app_for_emit.emit("rae_mentioned", serde_json::json!({}));
                         typed_chars.clear();
                     }
@@ -321,14 +316,11 @@ fn ensure_rae_watcher_started(app: &AppHandle) {
                 let space = (GetAsyncKeyState(0x20) as u16 & 0x8000u16) != 0;
 
                 if (backspace || enter || space) && !typed_chars.is_empty() {
-                    println!("Resetting sequence due to special key");
                     typed_chars.clear();
                 }
 
                 std::thread::sleep(std::time::Duration::from_millis(50));
             }
-
-            println!("Rae watcher stopped");
         }
         RAE_WATCHER_RUNNING.store(false, Ordering::SeqCst);
     });

@@ -9,6 +9,7 @@ use std::io;
 use std::os::windows::ffi::OsStrExt;
 use std::{thread, time::Duration};
 use tauri::{AppHandle, Emitter};
+use tracing::{info, warn, error};
 use winapi::ctypes::c_void;
 use winapi::shared::windef::HWND as WinHWND;
 use winapi::shared::windef::RECT;
@@ -127,7 +128,7 @@ fn inject_text_to_window(text: String, hwnd: WinHWND) -> Result<(), String> {
 }
 
 fn inject_text_via_clipboard(text: String, hwnd: WinHWND) -> Result<(), String> {
-    println!("🔄 Starting clipboard injection for {} characters", text.len());
+    info!("Starting clipboard injection for {} characters", text.len());
     
     unsafe {
         if SetForegroundWindow(hwnd) == 0 {
@@ -242,7 +243,7 @@ fn inject_text_via_clipboard(text: String, hwnd: WinHWND) -> Result<(), String> 
         std::thread::sleep(std::time::Duration::from_millis(10));
         SendInput(1, &mut ctrl_up, std::mem::size_of::<INPUT>() as i32);
         
-        println!("✅ Clipboard injection completed successfully");
+        info!("Clipboard injection completed successfully");
         Ok(())
     }
 }
@@ -546,37 +547,37 @@ pub async fn set_auto_start_enabled(app: tauri::AppHandle, enabled: bool) -> Res
     if enabled {
         match autostart_manager.enable() {
             Ok(_) => {
-                println!("Auto-start enabled successfully");
+                info!("Auto-start enabled successfully");
                 // Try to set up elevated privileges for Windows
                 #[cfg(target_os = "windows")]
                 {
                     if let Err(e) = setup_windows_elevated_startup(&app) {
-                        println!("Warning: Could not set up elevated startup: {}", e);
+                        warn!("Could not set up elevated startup: {}", e);
                         // Don't fail the whole operation, just warn
                     }
                 }
                 Ok(())
             },
             Err(e) => {
-                println!("Failed to enable auto-start: {}", e);
+                error!("Failed to enable auto-start: {}", e);
                 Err(format!("Failed to enable auto-start: {}", e))
             },
         }
     } else {
         match autostart_manager.disable() {
             Ok(_) => {
-                println!("Auto-start disabled successfully");
+                info!("Auto-start disabled successfully");
                 // Clean up elevated startup entry
                 #[cfg(target_os = "windows")]
                 {
                     if let Err(e) = cleanup_windows_elevated_startup() {
-                        println!("Warning: Could not clean up elevated startup: {}", e);
+                        warn!("Could not clean up elevated startup: {}", e);
                     }
                 }
                 Ok(())
             },
             Err(e) => {
-                println!("Failed to disable auto-start: {}", e);
+                error!("Failed to disable auto-start: {}", e);
                 Err(format!("Failed to disable auto-start: {}", e))
             },
         }
@@ -601,7 +602,7 @@ fn setup_windows_elevated_startup(_app: &tauri::AppHandle) -> Result<(), String>
         .output() {
         Ok(output) => {
             if output.status.success() {
-                println!("Elevated startup task created successfully");
+                info!("Elevated startup task created successfully");
                 Ok(())
             } else {
                 let stderr = String::from_utf8_lossy(&output.stderr);
@@ -622,16 +623,16 @@ fn cleanup_windows_elevated_startup() -> Result<(), String> {
         .output() {
         Ok(output) => {
             if output.status.success() {
-                println!("Elevated startup task removed successfully");
+                info!("Elevated startup task removed successfully");
                 Ok(())
             } else {
                 let stderr = String::from_utf8_lossy(&output.stderr);
-                println!("Warning: Failed to remove elevated startup task: {}", stderr);
+                warn!("Failed to remove elevated startup task: {}", stderr);
                 Ok(()) // Don't fail if cleanup fails
             }
         },
         Err(e) => {
-            println!("Warning: Failed to run schtasks delete command: {}", e);
+            warn!("Failed to run schtasks delete command: {}", e);
             Ok(()) // Don't fail if cleanup fails
         }
     }
