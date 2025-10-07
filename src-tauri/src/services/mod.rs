@@ -1,1 +1,2 @@
 pub mod text_injection;
+pub mod window_capture;

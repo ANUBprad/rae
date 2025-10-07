@@ -200,7 +200,7 @@ fn main() {
             functions::overlay::enable_notch,
             functions::overlay::follow_magic_dot,
             functions::overlay::pin_magic_dot,
-            functions::general::start_window_watch,
+            services::window_capture::start_window_watch,
             functions::overlay::start_notch_watcher,
             functions::overlay::close_magic_dot,
             functions::overlay::close_magic_chat,
