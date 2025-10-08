@@ -117,6 +117,7 @@ export default function ChatWindow() {
     image: string,
     tool: number,
     newMessages: any[],
+    files?: { name: string; type: string; size: number; content: string; textContent?: string }[],
   ) => {
     setStreamingMsg("");
     const response = await fetch(`${BASE_URL}/generate/msg`, {
@@ -133,6 +134,7 @@ export default function ChatWindow() {
         modelName,
         image,
         tool,
+        files: files || [],
       }),
     });
 
@@ -199,14 +201,16 @@ export default function ChatWindow() {
     };
   };
 
-  const handleSend = async (userMsg: string, images?: string[]) => {
+  const handleSend = async (userMsg: string, images?: string[], files?: { name: string; type: string; size: number; content: string; textContent?: string }[]) => {
     const imagesToSend = images && images.length > 0 ? images : [""];
+    const filesToSend = files && files.length > 0 ? files : [];
     let newMessages = [
       ...messages,
       {
         sender: "user" as const,
         text: userMsg,
         image: imagesToSend,
+        files: filesToSend,
       },
     ];
     setMessages(newMessages);
@@ -215,7 +219,7 @@ export default function ChatWindow() {
 
     try {
       if ((!images || images.length === 0) && selectedTool === 0) {
-        // Streaming logic for normal chat (no image, no tool)
+        // Streaming logic for normal chat (no image, no tool - files are supported in streaming)
         await handleStreamAIResponse(
           email,
           userMsg,
@@ -226,6 +230,7 @@ export default function ChatWindow() {
           "",
           0,
           newMessages,
+          filesToSend,
         );
       } else if (selectedTool === 1) {
         const ai_res = await GenerateWithWebSearch({
@@ -280,7 +285,7 @@ export default function ChatWindow() {
           setCurrentConvo(ai_res.conversationId);
         }
       } else {
-        // Fallback: normal Generate for image
+        // Fallback: normal Generate for image or files
         const ai_res = await Generate({
           email: email,
           message: userMsg,
@@ -289,7 +294,7 @@ export default function ChatWindow() {
           provider: currentModel.label,
           modelName: currentModel.value,
           image: imagesToSend,
-          files: [],
+          files: filesToSend,
         });
         let updatedMessages = [
           ...newMessages,
@@ -607,6 +612,32 @@ export default function ChatWindow() {
       ))}
   </div>
 )}
+
+              {/* Show attached files if exist */}
+              {(msg as any).files && (msg as any).files.length > 0 && (
+                <div className="mt-2 flex flex-col gap-2">
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                    Attached files:
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {(msg as any).files.map((file: any, fileIdx: number) => (
+                      <div
+                        key={fileIdx}
+                        className="flex items-center gap-2 px-3 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700"
+                      >
+                        <div className="flex flex-col">
+                          <div className="text-sm font-medium truncate max-w-[150px]">
+                            {file.name}
+                          </div>
+                          <div className="text-xs text-zinc-500">
+                            {(file.size / 1024).toFixed(1)}KB • {file.type}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ))}
 
