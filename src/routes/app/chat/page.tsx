@@ -521,8 +521,8 @@ export default function ChatWindow() {
               key={idx}
               className={`px-4 py-2 rounded-lg text-sm ${
                 msg.sender === "user"
-                  ? "bg-foreground dark:bg-surface font-medium text-background self-end text-right ml-auto w-fit max-w-[70%]"
-                  : "bg-zinc-200 dark:bg-[#333333] dark:text-white  self-start text-left w-fit max-w-[450px]"
+                  ? "bg-zinc-800 dark:bg-zinc-900 text-white rounded-2xl rounded-br-md px-4 py-3 self-end text-right ml-auto w-fit max-w-[70%]"
+                  : "bg-transparent text-foreground self-start text-left w-full"
               }`}
             >
               {msg.sender === "ai" ? (
