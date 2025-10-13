@@ -20,6 +20,278 @@ import {
   TrashSimpleIcon,
 } from "@phosphor-icons/react";
 import { useUserStore } from "@/store/userStore";
+
+// Message Handler Manager - handles different types of message sending
+const createMessageHandler = (
+  message: string,
+  attachedImages: string[],
+  attachedFiles: any[],
+  init: boolean,
+  setMessage: (msg: string) => void,
+  setIsTyping: (typing: boolean) => void,
+  setAttachedImages: (images: string[]) => void,
+  setAttachedFiles: (files: any[]) => void,
+  setInit?: (init: boolean) => void,
+  onSend?: (msg: string, images?: string[], files?: any[]) => void,
+  onWebSearch?: (msg: string, images?: string[], files?: any[]) => void,
+  onSupermemory?: (msg: string, images?: string[], files?: any[]) => void,
+  onImageGeneration?: (msg: string, images?: string[], files?: any[]) => void
+) => {
+  const resetInputs = () => {
+    setMessage("");
+    setIsTyping(false);
+    setAttachedImages([]);
+    setAttachedFiles([]);
+  };
+
+  const handleSend = () => {
+    if (!message.trim()) return;
+    if (onSend) {
+      onSend(message, attachedImages.length > 0 ? attachedImages.slice(0, 3) : undefined,
+             attachedFiles.length > 0 ? attachedFiles : undefined);
+    }
+    resetInputs();
+  };
+
+  const handleWebSearch = () => {
+    if (!message.trim()) return;
+    if (onWebSearch) {
+      onWebSearch(message, attachedImages.length > 0 ? attachedImages.slice(0, 3) : undefined,
+                  attachedFiles.length > 0 ? attachedFiles : undefined);
+    }
+    resetInputs();
+  };
+
+  const handleSupermemory = () => {
+    if (!message.trim()) return;
+    if (!init && setInit) setInit(true);
+    if (onSupermemory) {
+      onSupermemory(message, attachedImages.length > 0 ? attachedImages.slice(0, 3) : undefined,
+                     attachedFiles.length > 0 ? attachedFiles : undefined);
+    }
+    resetInputs();
+  };
+
+  const handleImageGeneration = () => {
+    if (!message.trim()) return;
+    if (onImageGeneration) {
+      onImageGeneration(message, attachedImages.length > 0 ? attachedImages.slice(0, 3) : undefined,
+                        attachedFiles.length > 0 ? attachedFiles : undefined);
+    }
+    resetInputs();
+  };
+
+  const handleSendMessage = (selectedTool: number) => {
+    if (selectedTool === 1) {
+      handleWebSearch();
+    } else if (selectedTool === 2) {
+      handleSupermemory();
+    } else if (selectedTool === 4) {
+      handleImageGeneration();
+    } else {
+      handleSend();
+    }
+  };
+
+  return {
+    handleSend,
+    handleWebSearch,
+    handleSupermemory,
+    handleImageGeneration,
+    handleSendMessage
+  };
+};
+
+// File Manager - handles file operations
+const createFileManager = (
+  setAttachedFiles: React.Dispatch<React.SetStateAction<any[]>>
+) => {
+  const clearFile = (idx: number) => {
+    setAttachedFiles((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleFileSelect = async () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.multiple = true;
+    input.accept = "*/*"; // Allow all file types
+
+    input.onchange = (e) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (files) {
+        Array.from(files).forEach((file) => {
+          // Check file size (limit to 10MB)
+          if (file.size > 10 * 1024 * 1024) {
+            alert(`File ${file.name} is too large. Maximum size is 10MB.`);
+            return;
+          }
+
+          const reader = new FileReader();
+
+          // For text files, also store the text content
+          if (
+            file.type.startsWith("text/") ||
+            file.name.toLowerCase().endsWith(".txt") ||
+            file.name.toLowerCase().endsWith(".js") ||
+            file.name.toLowerCase().endsWith(".ts") ||
+            file.name.toLowerCase().endsWith(".py") ||
+            file.name.toLowerCase().endsWith(".json") ||
+            file.name.toLowerCase().endsWith(".md") ||
+            file.name.toLowerCase().endsWith(".html") ||
+            file.name.toLowerCase().endsWith(".css") ||
+            file.name.toLowerCase().endsWith(".xml")
+          ) {
+            const textReader = new FileReader();
+            textReader.onload = (textEvent) => {
+              const textContent = textEvent.target?.result as string;
+              const base64Reader = new FileReader();
+              base64Reader.onload = (base64Event) => {
+                const base64 = base64Event.target?.result as string;
+                setAttachedFiles((prev) => {
+                  if (prev.length >= 5) return prev; // Limit to 5 files
+                  return [
+                    ...prev,
+                    {
+                      name: file.name,
+                      type: file.type,
+                      size: file.size,
+                      content: base64,
+                      textContent: textContent,
+                    },
+                  ];
+                });
+              };
+              base64Reader.readAsDataURL(file);
+            };
+            textReader.readAsText(file);
+          } else {
+            reader.onload = (event) => {
+              const base64 = event.target?.result as string;
+              setAttachedFiles((prev) => {
+                if (prev.length >= 5) return prev; // Limit to 5 files
+                return [
+                  ...prev,
+                  {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    content: base64,
+                  },
+                ];
+              });
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+    };
+
+    input.click();
+  };
+
+  return {
+    clearFile,
+    handleFileSelect
+  };
+};
+
+// Image Manager - handles image operations
+const createImageManager = (
+  setAttachedImages: React.Dispatch<React.SetStateAction<string[]>>,
+  onReferenceImage?: (imageBase64: string) => void
+) => {
+  const clearImage = (idx?: number) => {
+    if (typeof idx === "number") {
+      setAttachedImages((prev) => prev.filter((_, i) => i !== idx));
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.indexOf("image") !== -1) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const base64 = event.target?.result as string;
+            setAttachedImages((prev) => {
+              if (prev.length >= 3) return prev;
+              if (prev.includes(base64)) return prev;
+              return prev.length < 3 ? [...prev, base64] : prev;
+            });
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    }
+  };
+
+  const handleReferenceImage = (imageBase64: string) => {
+    // Create a custom event to communicate with ChatInput component
+    const event = new CustomEvent("referenceImage", {
+      detail: { imageBase64, shouldSwitchTool: false },
+    });
+    window.dispatchEvent(event);
+  };
+
+  return {
+    clearImage,
+    handlePaste,
+    handleReferenceImage
+  };
+};
+
+// UI State Manager - handles UI state operations
+const createUIStateManager = (
+  attachedImages: string[],
+  attachedFiles: any[],
+  setDisabled: (disabled: boolean) => void,
+  setExpanded: (expanded: boolean) => void,
+  setIsTyping: (typing: boolean) => void,
+  setToolsDropdownOpen: (open: boolean) => void,
+  onTypingChange?: (typing: boolean) => void,
+  onMessageChange?: (message: string) => void
+) => {
+  const handleInputChange = (value: string) => {
+    setDisabled(value.trim() === "");
+    const typing = value.length > 0;
+    setIsTyping(typing);
+    if (onTypingChange) {
+      onTypingChange(typing);
+    }
+    if (onMessageChange) {
+      onMessageChange(value);
+    }
+  };
+
+  const getPlaceholderText = (selectedTool: number) => {
+    if (attachedImages.length > 0) {
+      return "Describe what you want to know about these images...";
+    }
+    if (attachedFiles.length > 0) {
+      return "Ask questions about the uploaded files...";
+    }
+    switch (selectedTool) {
+      case 1:
+        return "Web search me...";
+      case 2:
+        return "Super memory search...";
+      case 4:
+        return "Generate or modify image...";
+      default:
+        return "Enter your message or paste a screenshot";
+    }
+  };
+
+  return {
+    handleInputChange,
+    getPlaceholderText
+  };
+};
 // OpenAI logo SVG as a data URL
 const openaiLogo = `data:image/svg+xml;base64,${btoa(`<svg width="721" height="721" viewBox="0 0 721 721" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_1637_2934)">
@@ -101,6 +373,36 @@ const Chat: React.FC<ChatProps> = ({
     setInit(initial);
   }, [initial]);
 
+  // Initialize managers
+  const messageHandler = createMessageHandler(
+    message,
+    attachedImages,
+    attachedFiles,
+    init,
+    setMessage,
+    setIsTyping,
+    setAttachedImages,
+    setAttachedFiles,
+    setInit,
+    onSend,
+    onWebSearch,
+    onSupermemory,
+    onImageGeneration
+  );
+
+  const fileManager = createFileManager(setAttachedFiles);
+  const imageManager = createImageManager(setAttachedImages, onReferenceImage);
+  const uiStateManager = createUIStateManager(
+    attachedImages,
+    attachedFiles,
+    setDisabled,
+    setExpanded,
+    setIsTyping,
+    setToolsDropdownOpen,
+    onTypingChange,
+    onMessageChange
+  );
+
   // Close tools dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -149,77 +451,7 @@ const Chat: React.FC<ChatProps> = ({
     }
   }, [initialMessage]);
 
-  const handleSend = () => {
-    if (!message.trim()) return;
-    if (!init) setInit(true);
-    if (onSend) onSend(
-      message, 
-      attachedImages.length > 0 ? attachedImages.slice(0, 3) : undefined,
-      attachedFiles.length > 0 ? attachedFiles : undefined
-    );
-    setMessage("");
-    setIsTyping(false);
-    setAttachedImages([]);
-    setAttachedFiles([]);
-    if (chatInputRef.current) {
-      chatInputRef.current.value = "";
-      //   autosize.update(chatInputRef.current);
-    }
-  };
 
-  const handleWebSearch = () => {
-    if (!message.trim()) return;
-    if (onWebSearch) onWebSearch(
-      message, 
-      attachedImages.length > 0 ? attachedImages.slice(0, 3) : undefined,
-      attachedFiles.length > 0 ? attachedFiles : undefined
-    );
-    setMessage("");
-    setIsTyping(false);
-    setAttachedImages([]);
-    setAttachedFiles([]);
-    if (chatInputRef.current) {
-      chatInputRef.current.value = "";
-      autosize.update(chatInputRef.current);
-    }
-  };
-
-  const handleSupermemory = () => {
-    if (!message.trim()) return;
-    if (!init) setInit(true);
-    if (onSupermemory) onSupermemory(
-      message, 
-      attachedImages.length > 0 ? attachedImages.slice(0, 3) : undefined,
-      attachedFiles.length > 0 ? attachedFiles : undefined
-    );
-    setMessage("");
-    setIsTyping(false);
-    setAttachedImages([]);
-    setAttachedFiles([]);
-    if (chatInputRef.current) {
-      chatInputRef.current.value = "";
-      //   autosize.update(chatInputRef.current);
-    }
-  };
-
-  const handleImageGeneration = () => {
-    if (!message.trim()) return;
-    if (!init) setInit(true);
-    if (onImageGeneration)
-      onImageGeneration(
-        message, 
-        attachedImages.length > 0 ? attachedImages.slice(0, 3) : undefined,
-        attachedFiles.length > 0 ? attachedFiles : undefined
-      );
-    setMessage("");
-    setIsTyping(false);
-    setAttachedImages([]);
-    setAttachedFiles([]);
-    if (chatInputRef.current) {
-      chatInputRef.current.value = "";
-      //   autosize.update(chatInputRef.current);
-    }
-  };
 
   // Handle image reference event from parent
   useEffect(() => {
@@ -244,31 +476,10 @@ const Chat: React.FC<ChatProps> = ({
     };
   }, []);
 
-  const getPlaceholderText = () => {
-    if (attachedImages.length > 0) {
-      return "Describe what you want to know about these images...";
-    }
-    if (attachedFiles.length > 0) {
-      return "Ask questions about the uploaded files...";
-    }
-    switch (selectedTool) {
-      case 1:
-        return "Web search me...";
-      case 2:
-        return "Super memory search...";
-      case 4:
-        return "Generate or modify image...";
-      default:
-        return "Enter your message or paste a screenshot";
-    }
-  };
+  const getPlaceholderText = () => uiStateManager.getPlaceholderText(selectedTool);
 
   const handleReferenceImage = (imageBase64: string) => {
-    setAttachedImages((prev) => {
-      if (prev.length >= 3) return prev;
-      if (prev.includes(imageBase64)) return prev;
-      return prev.length < 3 ? [...prev, imageBase64] : prev;
-    });
+    imageManager.handleReferenceImage(imageBase64);
     if (selectedTool !== 4 && onToolChange) {
       onToolChange(4);
     }
@@ -278,146 +489,24 @@ const Chat: React.FC<ChatProps> = ({
   };
 
   const handleSendMessage = () => {
-    if (selectedTool === 1) {
-      handleWebSearch();
-    } else if (selectedTool === 2) {
-      handleSupermemory();
-    } else if (selectedTool === 4) {
-      handleImageGeneration();
-    } else {
-      handleSend();
-    }
+    messageHandler.handleSendMessage(selectedTool);
   };
 
   // Handle image paste
-  const handlePaste = (e: React.ClipboardEvent) => {
-    const items = e.clipboardData?.items;
-    if (!items) return;
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      if (item.type.indexOf("image") !== -1) {
-        e.preventDefault();
-        const file = item.getAsFile();
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            const base64 = event.target?.result as string;
-            setAttachedImages((prev) => {
-              if (prev.length >= 3) return prev;
-              if (prev.includes(base64)) return prev;
-              return prev.length < 3 ? [...prev, base64] : prev;
-            });
-          };
-          reader.readAsDataURL(file);
-        }
-      }
-    }
-  };
+  const handlePaste = imageManager.handlePaste;
 
   // Clear attached image(s)
-  const clearImage = (idx?: number) => {
-    if (typeof idx === "number") {
-      setAttachedImages((prev) => prev.filter((_, i) => i !== idx));
-    } else {
-      setAttachedImages([]);
-    }
-  };
+  const clearImage = imageManager.clearImage;
 
   // Handle file selection
-  const handleFileSelect = async () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.multiple = true;
-    input.accept = "*/*"; // Allow all file types
-
-    input.onchange = (e) => {
-      const files = (e.target as HTMLInputElement).files;
-      if (files) {
-        Array.from(files).forEach((file) => {
-          // Check file size (limit to 10MB)
-          if (file.size > 10 * 1024 * 1024) {
-            alert(`File ${file.name} is too large. Maximum size is 10MB.`);
-            return;
-          }
-
-          const reader = new FileReader();
-
-          // For text files, also store the text content
-          if (
-            file.type.startsWith("text/") ||
-            file.name.toLowerCase().endsWith(".txt") ||
-            file.name.toLowerCase().endsWith(".js") ||
-            file.name.toLowerCase().endsWith(".ts") ||
-            file.name.toLowerCase().endsWith(".py") ||
-            file.name.toLowerCase().endsWith(".json") ||
-            file.name.toLowerCase().endsWith(".md") ||
-            file.name.toLowerCase().endsWith(".html") ||
-            file.name.toLowerCase().endsWith(".css") ||
-            file.name.toLowerCase().endsWith(".xml")
-          ) {
-            const textReader = new FileReader();
-            textReader.onload = (textEvent) => {
-              const textContent = textEvent.target?.result as string;
-              const base64Reader = new FileReader();
-              base64Reader.onload = (base64Event) => {
-                const base64 = base64Event.target?.result as string;
-                setAttachedFiles((prev) => {
-                  if (prev.length >= 5) return prev; // Limit to 5 files
-                  return [
-                    ...prev,
-                    {
-                      name: file.name,
-                      type: file.type,
-                      size: file.size,
-                      content: base64,
-                      textContent: textContent,
-                    },
-                  ];
-                });
-              };
-              base64Reader.readAsDataURL(file);
-            };
-            textReader.readAsText(file);
-          } else {
-            reader.onload = (event) => {
-              const base64 = event.target?.result as string;
-              setAttachedFiles((prev) => {
-                if (prev.length >= 5) return prev; // Limit to 5 files
-                return [
-                  ...prev,
-                  {
-                    name: file.name,
-                    type: file.type,
-                    size: file.size,
-                    content: base64,
-                  },
-                ];
-              });
-            };
-            reader.readAsDataURL(file);
-          }
-        });
-      }
-    };
-
-    input.click();
-  };
+  const handleFileSelect = fileManager.handleFileSelect;
 
   // Clear attached file
-  const clearFile = (idx: number) => {
-    setAttachedFiles((prev) => prev.filter((_, i) => i !== idx));
-  };
+  const clearFile = fileManager.clearFile;
 
   const handleInputChange = (value: string) => {
     setMessage(value);
-    const typing = value.length > 0;
-    setIsTyping(typing);
-    if (onTypingChange) {
-      onTypingChange(typing);
-    }
-    if (onMessageChange) {
-      onMessageChange(value);
-    }
+    uiStateManager.handleInputChange(value);
   };
 
   return (
@@ -773,7 +862,7 @@ const Chat: React.FC<ChatProps> = ({
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
                         e.preventDefault();
-                        if (!disabled) handleSend();
+                        if (!disabled) messageHandler.handleSend();
                       }
                     }}
                     value={message}
@@ -1004,7 +1093,7 @@ const Chat: React.FC<ChatProps> = ({
                       className={`rounded-lg size-full dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-colors duration-100 p-0 flex items-center justify-center ${
                         disabled && "dark:bg-zinc-800  !text-foreground/20"
                       }`}
-                      onClick={handleSend}
+                      onClick={messageHandler.handleSend}
                     >
                       <ArrowElbowDownLeftIcon weight="bold"></ArrowElbowDownLeftIcon>
                     </button>
