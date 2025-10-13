@@ -19,7 +19,6 @@ export const NameUpdate = async (
       email: email,
       name: name,
     });
-    console.log(res);
     return {
       success: res.status === 201,
       message: res.data.message || "Name Update Successfull",

@@ -66,7 +66,6 @@ function App() {
             console.warn("isRegistered/unregister failed; continuing", e);
           }
           await register(combo, async () => {
-            console.log("Global shortcut pressed:", combo);
             const now = Date.now();
             if (now - lastFired < cooldownMs) {
               return;
@@ -74,7 +73,6 @@ function App() {
             lastFired = now;
             try {
               await invoke("toggle_magic_dot");
-              console.log("Invoked toggle_magic_dot");
             } catch (e) {
               console.error("Failed to toggle magic dot", e);
             }
@@ -111,7 +109,6 @@ function App() {
             console.warn("isRegistered/unregister failed; continuing", e);
           }
           await register(combo, async () => {
-            console.log("Global shortcut pressed:", combo);
             const now = Date.now();
             if (now - lastFired < cooldownMs) {
               return;
@@ -155,7 +152,6 @@ function App() {
             console.warn("isRegistered/unregister failed; continuing", e);
           }
           await register(combo, async () => {
-            console.log("Global shortcut pressed:", combo);
             const now = Date.now();
             if (now - lastFired < cooldownMs) {
               return;
@@ -163,13 +159,11 @@ function App() {
             lastFired = now;
             try {
               await invoke("center_overlay_bar");
-              console.log("Invoked center_overlay_bar");
             } catch (e) {
               console.error("Failed to center overlay bar", e);
             }
           });
           const ok = await isRegistered(combo);
-          console.log("Registered global shortcut:", combo, ok);
         } catch (e) {
           console.error("Failed to register global shortcut", e);
         }
@@ -201,7 +195,6 @@ function App() {
             console.warn("isRegistered/unregister failed; continuing", e);
           }
           await register(combo, async () => {
-            console.log("Global shortcut pressed:", combo);
             const now = Date.now();
             if (now - lastFired < cooldownMs) {
               return;
@@ -209,13 +202,11 @@ function App() {
             lastFired = now;
             try {
               await invoke("toggle_pin_overlay");
-              console.log("Invoked toggle_pin_overlay");
             } catch (e) {
               console.error("Failed to toggle pin overlay", e);
             }
           });
           const ok = await isRegistered(combo);
-          console.log("Registered global shortcut:", combo, ok);
         } catch (e) {
           console.error("Failed to register global shortcut", e);
         }
@@ -321,7 +312,6 @@ function App() {
     const unlisten = listen(
       "theme",
       ({ payload }: { payload: { darkTheme: boolean } }) => {
-        console.log("Got theme update", payload);
         // const root = document.documentElement;
         // if (payload.darkTheme) {
         //   root.classList.add("dark");

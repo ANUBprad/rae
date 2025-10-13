@@ -92,15 +92,10 @@ function detectCodingPlatform(windowName?: string): InsertionContext['platform']
 export const extractInsertableContent = (response: string, context?: InsertionContext): string => {
   if (!response) return "";
   
-  console.log("Starting extraction for response:", response.substring(0, 200) + "...");
-  console.log("Context:", context);
-  
   // Detect context if not provided
   const detectedContext = context?.detectedContext || detectWindowContext(context);
   const detectedPlatform = context?.platform || detectCodingPlatform(context?.windowName);
   const contextualInfo = { ...context, detectedContext, platform: detectedPlatform };
-  
-  console.log("🎪 Detected context:", detectedContext, "platform:", detectedPlatform);
   
   // Context-aware extraction strategy
   let result = "";
@@ -125,8 +120,6 @@ export const extractInsertableContent = (response: string, context?: InsertionCo
       break;
   }
   
-  console.log("Final extraction result:", result);
-  
   // Safety fallback - only if result is completely empty
   if (!result || result.trim().length === 0) {
     console.warn("Extraction result is empty, returning original response");
@@ -140,27 +133,20 @@ export const extractInsertableContent = (response: string, context?: InsertionCo
  * Extract content optimized for coding platforms like LeetCode, CodePen, etc.
  */
 function extractForCodingPlatform(response: string, context: InsertionContext): string {
-  console.log("Extracting for coding platform:", context.platform);
   
   // Simple approach: just extract code blocks without complex processing
   const codeBlockMatches = response.match(/```[\s\S]*?```/g);
   if (codeBlockMatches && codeBlockMatches.length > 0) {
-    console.log("Found", codeBlockMatches.length, "code blocks");
-    
     const codeContent = codeBlockMatches.map((block, index) => {
-      console.log(`Processing code block ${index + 1}`);
-      
       const lines = block.split('\n');
       // Remove first line (```language) and last line (```)
       const codeLines = lines.slice(1, -1);
       const rawCode = codeLines.join('\n');
-      
-      console.log("Extracted raw code:", rawCode);
+
       return rawCode;
     }).join('\n\n');
-    
+
     if (codeContent.trim()) {
-      console.log("Returning simple code extraction:", codeContent.trim());
       return codeContent.trim();
     }
   }
@@ -200,11 +186,9 @@ function extractForCodingPlatform(response: string, context: InsertionContext): 
   
   if (codeLines.length > 0) {
     const codeText = codeLines.join('\n');
-    console.log("Found inline code patterns, formatting:", codeText);
     return formatCodeForPlatform(codeText, context.platform);
   }
-  
-  console.log("No code patterns found, falling back to general extraction");
+
   return extractGeneral(response, context);
 }
 
@@ -233,21 +217,15 @@ function formatCodeForPlatform(code: string, platform?: InsertionContext['platfo
  */
 function formatForLeetCode(code: string): string {
   if (!code) return code;
-  
-  console.log("LeetCode formatting input:", code);
-  
+
   // For LeetCode, let's be more flexible and not try to extract function bodies
   // Instead, just format the entire code block properly
-  console.log("Skipping function body extraction for LeetCode - using full code with proper indentation");
-  
+
   // Just return the code as-is with minimal formatting
   // LeetCode editor handles most formatting automatically
   const lines = code.split('\n');
-  console.log("All lines before filtering:", lines);
   const nonEmptyLines = lines.filter(line => line.trim().length > 0);
-  console.log("Non-empty lines:", nonEmptyLines);
-  
-  console.log("LeetCode formatted result (simplified):", nonEmptyLines.join('\n'));
+
   return nonEmptyLines.join('\n');
 }
 

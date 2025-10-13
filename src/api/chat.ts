@@ -33,8 +33,7 @@ export const Generate = async ({
       // If it's undefined, null, empty string, or anything else, use [""]
       normalizedImage = [''];
     }
-    
-    console.log("image sent with this req:", normalizedImage);
+
     if (normalizedImage.some(img => img !== '') || tool) {
       // Normal axios request
       res = await axios.post(`${BASE_URL}/generate/msg`, {
@@ -150,7 +149,6 @@ export const GetConvos = async ({ email }): Promise<any> => {
       title: c.title,
       messages: [], // always start blank
     }));
-    console.log(formatted);
     return {
       success: true,
       data: formatted,
@@ -175,7 +173,6 @@ export const getConvoMessage = async ({ convoId }): Promise<any> => {
       title: c.title,
       messages: [], // always start blank
     }));
-    console.log(formatted);
     return {
       success: true,
       data: res.data,

@@ -154,54 +154,27 @@ const Overlay = () => {
 
   // Save isActive state to localStorage whenever it changes
   useEffect(() => {
-    console.log("Toggle state change detected, isActive:", isActive);
     localStorage.setItem("overlay_active", String(isActive));
-    console.log("Overlay active state saved:", isActive);
 
     // Clear screenshot when toggle is turned off
     if (!isActive) {
-      console.log("Clearing screenshot - toggle turned off");
-      console.log(
-        "Before clearing, windowScreenshot length:",
-        windowScreenshot.length,
-      );
       setWindowScreenshot("");
       setShowScreenshot(false);
-      console.log("Screenshot cleared - toggle turned off");
     } else {
       // Capture screenshot immediately when toggle is turned on
       if (windowHwnd != null) {
-        console.log(
-          "🔄 Capturing screenshot immediately after toggle enabled...",
-        );
-        console.log("📍 Current windowHwnd:", windowHwnd);
 
         invoke("capture_window_screenshot_by_hwnd", {
           hwnd: windowHwnd,
         })
           .then((screenshot: string) => {
-            console.log(
-              "✅ Immediate screenshot captured, length:",
-              screenshot.length,
-            );
             if (screenshot.length > 0) {
-              console.log(
-                "📸 Screenshot starts with:",
-                screenshot.substring(0, 50),
-              );
               setWindowScreenshot(screenshot);
-              console.log(
-                "💾 windowScreenshot state updated for chat functionality",
-              );
-            } else {
-              console.log("❌ Screenshot captured but empty");
             }
           })
           .catch((error) => {
             console.error("❌ Failed to capture immediate screenshot:", error);
           });
-      } else {
-        console.log("⚠️ Cannot capture screenshot - windowHwnd is null");
       }
     }
   }, [isActive, windowHwnd]);
@@ -321,7 +294,6 @@ const Overlay = () => {
       !inputActive &&
       !DISABLE_NOTCH_ON_SHOW.current
     ) {
-      console.log("Setting notch timeout:", NOTCH_TIMEOUT, "ms");
       notchTimeoutRef.current = setTimeout(() => {
         // Double check that user isn't typing when timeout fires and notch not disabled
         if (
@@ -329,10 +301,8 @@ const Overlay = () => {
           isPinned &&
           !DISABLE_NOTCH_ON_SHOW.current
         ) {
-          console.log("Enabling notch - all conditions met");
           invoke("enable_notch")
             .then(() => {
-              console.log("Notch enabled successfully");
               setIsNotch(true);
               // Play sound with perfect timing - synced with smooth resize animation (200ms total, play at 100ms)
               setTimeout(() => playNotchSound(bubbleSoundEnabled), 60);
@@ -340,22 +310,8 @@ const Overlay = () => {
             .catch((error) => {
               console.error("Failed to enable notch:", error);
             });
-        } else {
-          console.log("Notch conditions not met at timeout:", {
-            inputActive: inputActiveRef.current,
-            isPinned,
-            disableNotch: DISABLE_NOTCH_ON_SHOW.current,
-          });
         }
       }, NOTCH_TIMEOUT);
-    } else {
-      console.log("Not setting notch timeout - conditions not met:", {
-        isPinned,
-        showChat,
-        isNotch,
-        inputActive,
-        disableNotch: DISABLE_NOTCH_ON_SHOW.current,
-      });
     }
 
     // Safety mechanism: If we're pinned and conditions are mostly met but notch is disabled,
