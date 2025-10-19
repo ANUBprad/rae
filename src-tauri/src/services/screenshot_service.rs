@@ -1,4 +1,4 @@
-use base64::{Engine as _, engine::general_purpose};
+use base64::{engine::general_purpose, Engine as _};
 use image::{DynamicImage, ImageFormat};
 use std::io;
 use std::os::windows::ffi::OsStrExt;
@@ -9,7 +9,8 @@ use winapi::um::wingdi::{
     SelectObject, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, SRCCOPY,
 };
 use winapi::um::winuser::{
-    FindWindowW, GetDC, GetSystemMetrics, GetWindowRect, PrintWindow, ReleaseDC, SM_CXSCREEN, SM_CYSCREEN,
+    FindWindowW, GetDC, GetSystemMetrics, GetWindowRect, PrintWindow, ReleaseDC, SM_CXSCREEN,
+    SM_CYSCREEN,
 };
 
 #[tauri::command]

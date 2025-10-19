@@ -1,18 +1,19 @@
+use base64::{engine::general_purpose, Engine};
+use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+use futures_util::{SinkExt, StreamExt};
+use serde_json::json;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use futures_util::{SinkExt, StreamExt};
+use tauri::{AppHandle, Emitter};
 use tokio::time::interval;
 use tokio_tungstenite::connect_async;
+use tracing::{debug, error, info};
 use tungstenite::protocol::Message;
-use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use serde_json::json;
-use base64::{Engine, engine::general_purpose};
-use tauri::{AppHandle, Emitter};
-use tracing::{info, error, debug};
 
 pub struct AudioState;
 
-static AUDIO_CLIENT_RUNNING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+static AUDIO_CLIENT_RUNNING: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
 
 // Convert f32 samples to 16-bit PCM (matching React floatTo16BitPCM)
 fn float_to_16bit_pcm(input: &[f32]) -> Vec<u8> {
@@ -94,7 +95,10 @@ pub async fn run_audio_client(app_handle: AppHandle) {
     let host = cpal::default_host();
     let device = match host.default_output_device() {
         Some(device) => {
-            info!("Using system audio device: {}", device.name().unwrap_or("Unknown".to_string()));
+            info!(
+                "Using system audio device: {}",
+                device.name().unwrap_or("Unknown".to_string())
+            );
             device
         }
         None => {
@@ -114,7 +118,12 @@ pub async fn run_audio_client(app_handle: AppHandle) {
     };
 
     let sample_rate = config.sample_rate().0;
-    info!("Audio config: {} channels, {} Hz, {:?}", config.channels(), sample_rate, config.sample_format());
+    info!(
+        "Audio config: {} channels, {} Hz, {:?}",
+        config.channels(),
+        sample_rate,
+        config.sample_format()
+    );
 
     // Create audio stream (matching React audio processing)
     let buffer_clone = buffer.clone();

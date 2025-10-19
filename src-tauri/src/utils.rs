@@ -5,7 +5,10 @@ use tauri::WebviewWindow;
 
 /// Gets the monitor that contains the window based on its position.
 /// This is more reliable than current_monitor() in multi-monitor setups.
-pub fn get_monitor_by_window_position(window: &WebviewWindow, app: &tauri::AppHandle) -> Option<tauri::Monitor> {
+pub fn get_monitor_by_window_position(
+    window: &WebviewWindow,
+    app: &tauri::AppHandle,
+) -> Option<tauri::Monitor> {
     let window_pos = window.outer_position().ok()?;
     let window_size = window.outer_size().ok()?;
 

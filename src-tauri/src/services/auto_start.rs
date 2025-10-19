@@ -1,4 +1,4 @@
-use tracing::{info, warn, error};
+use tracing::{error, info, warn};
 
 #[tauri::command]
 pub async fn set_auto_start_enabled(app: tauri::AppHandle, enabled: bool) -> Result<(), String> {
@@ -18,11 +18,11 @@ pub async fn set_auto_start_enabled(app: tauri::AppHandle, enabled: bool) -> Res
                     }
                 }
                 Ok(())
-            },
+            }
             Err(e) => {
                 error!("Failed to enable auto-start: {}", e);
                 Err(format!("Failed to enable auto-start: {}", e))
-            },
+            }
         }
     } else {
         match autostart_manager.disable() {
@@ -36,11 +36,11 @@ pub async fn set_auto_start_enabled(app: tauri::AppHandle, enabled: bool) -> Res
                     }
                 }
                 Ok(())
-            },
+            }
             Err(e) => {
                 error!("Failed to disable auto-start: {}", e);
                 Err(format!("Failed to disable auto-start: {}", e))
-            },
+            }
         }
     }
 }
@@ -67,21 +67,28 @@ fn setup_windows_elevated_startup(_app: &tauri::AppHandle) -> Result<(), String>
     // Create a scheduled task that runs as administrator
     // This requires Windows Task Scheduler
     let task_name = "RaeAutoStart";
-    let command = format!("schtasks /create /tn \"{}\" /tr \"\\\"{}\\\"\" /sc onlogon /rl highest /f", task_name, exe_path);
+    let command = format!(
+        "schtasks /create /tn \"{}\" /tr \"\\\"{}\\\"\" /sc onlogon /rl highest /f",
+        task_name, exe_path
+    );
 
     match std::process::Command::new("cmd")
         .args(&["/C", &command])
-        .output() {
+        .output()
+    {
         Ok(output) => {
             if output.status.success() {
                 info!("Elevated startup task created successfully");
                 Ok(())
             } else {
                 let stderr = String::from_utf8_lossy(&output.stderr);
-                Err(format!("Failed to create elevated startup task: {}", stderr))
+                Err(format!(
+                    "Failed to create elevated startup task: {}",
+                    stderr
+                ))
             }
-        },
-        Err(e) => Err(format!("Failed to run schtasks command: {}", e))
+        }
+        Err(e) => Err(format!("Failed to run schtasks command: {}", e)),
     }
 }
 
@@ -92,7 +99,8 @@ fn cleanup_windows_elevated_startup() -> Result<(), String> {
 
     match std::process::Command::new("cmd")
         .args(&["/C", &command])
-        .output() {
+        .output()
+    {
         Ok(output) => {
             if output.status.success() {
                 info!("Elevated startup task removed successfully");
@@ -102,7 +110,7 @@ fn cleanup_windows_elevated_startup() -> Result<(), String> {
                 warn!("Failed to remove elevated startup task: {}", stderr);
                 Ok(()) // Don't fail if cleanup fails
             }
-        },
+        }
         Err(e) => {
             warn!("Failed to run schtasks delete command: {}", e);
             Ok(()) // Don't fail if cleanup fails

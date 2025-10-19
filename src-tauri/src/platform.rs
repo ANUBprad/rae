@@ -21,8 +21,9 @@ use winapi::{
         },
         winnt::{PROCESS_QUERY_INFORMATION, PROCESS_VM_READ},
         winuser::{
-            DestroyIcon, GetIconInfo, GetWindowThreadProcessId, GetWindowTextLengthW,
-            GetWindowTextW, SendMessageW, ICONINFO, ICON_BIG, ICON_SMALL, ICON_SMALL2, WM_GETICON,
+            DestroyIcon, GetIconInfo, GetWindowTextLengthW, GetWindowTextW,
+            GetWindowThreadProcessId, SendMessageW, ICONINFO, ICON_BIG, ICON_SMALL, ICON_SMALL2,
+            WM_GETICON,
         },
     },
 };
@@ -30,21 +31,36 @@ use winapi::{
 // Windows crate (WinRT/COM) for packaged app icons
 #[cfg(target_os = "windows")]
 mod packaged_icon {
-    use std::ffi::OsString;
-    use std::os::windows::ffi::OsStrExt;
     use base64::Engine;
     use image::ImageEncoder;
+    use std::ffi::OsString;
+    use std::os::windows::ffi::OsStrExt;
     use windows::core::{ComInterface, PCWSTR, PWSTR};
     use windows::Win32::Foundation::{HWND as WHWND, SIZE};
-    use windows::Win32::Graphics::Gdi::{DeleteObject, GetDIBits, GetObjectW, HBITMAP as WHBITMAP, BITMAP as WBITMAP, BITMAPINFO, BITMAPINFOHEADER, DIB_RGB_COLORS, GetDC, BI_RGB};
-    use windows::Win32::UI::Shell::PropertiesSystem::{IPropertyStore, SHGetPropertyStoreForWindow, PROPERTYKEY};
-    use windows::Win32::UI::Shell::{IShellItem, IShellItemImageFactory, SHCreateItemFromIDList, SHParseDisplayName, SIIGBF_ICONONLY};
+    use windows::Win32::Graphics::Gdi::{
+        DeleteObject, GetDC, GetDIBits, GetObjectW, BITMAP as WBITMAP, BITMAPINFO,
+        BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, HBITMAP as WHBITMAP,
+    };
     use windows::Win32::UI::Shell::Common::ITEMIDLIST;
+    use windows::Win32::UI::Shell::PropertiesSystem::{
+        IPropertyStore, SHGetPropertyStoreForWindow, PROPERTYKEY,
+    };
+    use windows::Win32::UI::Shell::{
+        IShellItem, IShellItemImageFactory, SHCreateItemFromIDList, SHParseDisplayName,
+        SIIGBF_ICONONLY,
+    };
 
     fn hbitmap_to_base64(hbmp: WHBITMAP) -> Option<String> {
         unsafe {
             let mut bmp = WBITMAP::default();
-            if GetObjectW(hbmp, std::mem::size_of::<WBITMAP>() as i32, Some(&mut bmp as *mut _ as *mut _ )) == 0 { return None; }
+            if GetObjectW(
+                hbmp,
+                std::mem::size_of::<WBITMAP>() as i32,
+                Some(&mut bmp as *mut _ as *mut _),
+            ) == 0
+            {
+                return None;
+            }
             let width = bmp.bmWidth as u32;
             let height = bmp.bmHeight as u32;
 
@@ -62,12 +78,27 @@ mod packaged_icon {
             };
 
             let mut pixels = vec![0u8; (width * height * 4) as usize];
-            if GetDIBits(GetDC(None), hbmp, 0, height, Some(pixels.as_mut_ptr() as *mut _), &mut bi, DIB_RGB_COLORS) == 0 { return None; }
+            if GetDIBits(
+                GetDC(None),
+                hbmp,
+                0,
+                height,
+                Some(pixels.as_mut_ptr() as *mut _),
+                &mut bi,
+                DIB_RGB_COLORS,
+            ) == 0
+            {
+                return None;
+            }
 
-            for chunk in pixels.chunks_mut(4) { chunk.swap(0, 2); }
+            for chunk in pixels.chunks_mut(4) {
+                chunk.swap(0, 2);
+            }
             let img = image::ImageBuffer::<image::Rgba<u8>, _>::from_raw(width, height, pixels)?;
             let mut png_bytes = Vec::new();
-            image::codecs::png::PngEncoder::new(&mut png_bytes).write_image(&img, width, height, image::ColorType::Rgba8).ok()?;
+            image::codecs::png::PngEncoder::new(&mut png_bytes)
+                .write_image(&img, width, height, image::ColorType::Rgba8)
+                .ok()?;
             Some(base64::engine::general_purpose::STANDARD.encode(&png_bytes))
         }
     }
@@ -77,22 +108,41 @@ mod packaged_icon {
             let hwnd_w = WHWND(hwnd as isize);
             let store: IPropertyStore = SHGetPropertyStoreForWindow(hwnd_w).ok()?;
             // PKEY_AppUserModel_ID {9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3}, pid 5
-            let pkey = PROPERTYKEY{ fmtid: windows::core::GUID::from_values(0x9f4c2855,0x9f79,0x4b39,[0xa8,0xd0,0xe1,0xd4,0x2d,0xe1,0xd5,0xf3]), pid: 5};
+            let pkey = PROPERTYKEY {
+                fmtid: windows::core::GUID::from_values(
+                    0x9f4c2855,
+                    0x9f79,
+                    0x4b39,
+                    [0xa8, 0xd0, 0xe1, 0xd4, 0x2d, 0xe1, 0xd5, 0xf3],
+                ),
+                pid: 5,
+            };
             let var = store.GetValue(&pkey).ok()?;
             let pw = PWSTR(var.Anonymous.Anonymous.Anonymous.pwszVal.0);
-            if pw.is_null() { return None; }
+            if pw.is_null() {
+                return None;
+            }
             let aumid = pw.to_string().ok()?;
             let target = format!("shell:AppsFolder\\{}", aumid);
-            let target_w: Vec<u16> = OsString::from(target).encode_wide().chain(Some(0)).collect();
+            let target_w: Vec<u16> = OsString::from(target)
+                .encode_wide()
+                .chain(Some(0))
+                .collect();
 
             let mut pidl: *mut ITEMIDLIST = std::ptr::null_mut();
-            if SHParseDisplayName(PCWSTR(target_w.as_ptr()), None, &mut pidl, 0, None).is_err() || pidl.is_null() {
+            if SHParseDisplayName(PCWSTR(target_w.as_ptr()), None, &mut pidl, 0, None).is_err()
+                || pidl.is_null()
+            {
                 return None;
             }
             let item: IShellItem = SHCreateItemFromIDList(pidl).ok()?;
             let imgf: IShellItemImageFactory = item.cast().ok()?;
-            let hbmp: WHBITMAP = imgf.GetImage(SIZE{cx:32, cy:32}, SIIGBF_ICONONLY).ok()?;
-            if hbmp.0 == 0 { return None; }
+            let hbmp: WHBITMAP = imgf
+                .GetImage(SIZE { cx: 32, cy: 32 }, SIIGBF_ICONONLY)
+                .ok()?;
+            if hbmp.0 == 0 {
+                return None;
+            }
             let base64 = hbitmap_to_base64(hbmp);
             let _ = DeleteObject(hbmp);
             base64
@@ -289,5 +339,7 @@ pub fn get_packaged_app_icon_from_hwnd(_hwnd: HWND) -> Option<String> {
         return packaged_icon::try_get_packaged_icon(_hwnd);
     }
     #[allow(unreachable_code)]
-    { None }
+    {
+        None
+    }
 }

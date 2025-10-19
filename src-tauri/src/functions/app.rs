@@ -10,12 +10,11 @@ pub fn show_app(app: AppHandle) {
 }
 
 #[tauri::command]
-pub  fn hide_app(app: AppHandle) {
-    if let Some(window) = app.get_webview_window("main"){
+pub fn hide_app(app: AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
         let _ = window.set_ignore_cursor_events(true);
     }
 }
-
 
 #[tauri::command]
 pub fn start_following_overlay(app: AppHandle) {

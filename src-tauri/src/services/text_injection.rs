@@ -4,9 +4,9 @@ use tracing::info;
 use winapi::shared::windef::HWND as WinHWND;
 use winapi::um::winbase::{GlobalAlloc, GlobalLock, GlobalUnlock, GMEM_MOVEABLE};
 use winapi::um::winuser::{
-    FindWindowW, OpenClipboard, EmptyClipboard, SetClipboardData, CloseClipboard,
-    SetForegroundWindow, SendInput, INPUT, INPUT_KEYBOARD, KEYBDINPUT, KEYEVENTF_KEYUP,
-    CF_UNICODETEXT, VK_CONTROL,
+    CloseClipboard, EmptyClipboard, FindWindowW, OpenClipboard, SendInput, SetClipboardData,
+    SetForegroundWindow, CF_UNICODETEXT, INPUT, INPUT_KEYBOARD, KEYBDINPUT, KEYEVENTF_KEYUP,
+    VK_CONTROL,
 };
 
 // VK_V constant (not defined in winapi crate)

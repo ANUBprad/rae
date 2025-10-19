@@ -1,15 +1,10 @@
 import { useState, useEffect } from "react";
+import { check } from "@tauri-apps/plugin-updater";
 
 export const checkForUpdate = async (): Promise<boolean> => {
   try {
-    // TODO: Implement actual update check logic
-    // This could involve:
-    // 1. Checking with Tauri updater API
-    // 2. Making API call to check latest version
-    // 3. Comparing current version with remote version
-
-    // For now, return true as dummy functionality
-    return true;
+    const update = await check();
+    return !!update; // true if an update is available
   } catch (error) {
     console.error("Failed to check for updates:", error);
     return false;
@@ -27,8 +22,8 @@ export const useUpdateCheck = (): boolean => {
 
     checkUpdate();
 
-    // Optionally, set up periodic checks
-    // const interval = setInterval(checkUpdate, 3600000); // Check every hour
+    // Optional: check periodically, e.g., every hour
+    // const interval = setInterval(checkUpdate, 3600000);
     // return () => clearInterval(interval);
   }, []);
 
@@ -37,13 +32,29 @@ export const useUpdateCheck = (): boolean => {
 
 export const handleUpdateClick = async (): Promise<void> => {
   try {
-    // TODO: Implement actual update logic
-    // This could involve:
-    // 1. Triggering Tauri updater to download and install
-    // 2. Redirecting to download page
-    // 3. Showing update modal with release notes
+    const update = await check();
+    if (!update) {
+      console.log("No update available");
+      return;
+    }
 
-    console.log("Update button clicked - update logic to be implemented");
+    console.log(`Found update ${update.version}: ${update.body}`);
+
+    await update.downloadAndInstall((event) => {
+      switch (event.event) {
+        case "Started":
+          console.log(`Downloading ${event.data.contentLength} bytes...`);
+          break;
+        case "Progress":
+          console.log(`Downloaded ${event.data.chunkLength} bytes`);
+          break;
+        case "Finished":
+          console.log(
+            "Download complete. On Windows, app will relaunch automatically.",
+          );
+          break;
+      }
+    });
   } catch (error) {
     console.error("Failed to handle update:", error);
   }

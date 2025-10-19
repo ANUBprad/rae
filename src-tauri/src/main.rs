@@ -1,11 +1,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 // Declare the modules that make up the application logic.
+mod audio_client;
 mod functions;
 mod platform;
-mod utils;
-mod audio_client;
 mod services;
+mod utils;
 
 // Import required traits
 use audio_client::AudioState;
@@ -28,7 +28,10 @@ fn create_system_tray(
     show_overlay: bool,
     skip_taskbar_handling: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mut created = tray_state.0.lock().map_err(|_| "Failed to lock tray state")?;
+    let mut created = tray_state
+        .0
+        .lock()
+        .map_err(|_| "Failed to lock tray state")?;
 
     if *created {
         return Ok(());
@@ -38,9 +41,7 @@ fn create_system_tray(
     let quit_item = MenuItemBuilder::with_id("quit_rae", "Quit").build(app)?;
     let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
 
-    let tray_builder = TrayIconBuilder::new()
-        .icon(load_tray_icon())
-        .menu(&menu);
+    let tray_builder = TrayIconBuilder::new().icon(load_tray_icon()).menu(&menu);
 
     // Configure tray icon events based on parameters
     let tray_builder = if skip_taskbar_handling {
@@ -141,10 +142,10 @@ fn main() {
     let subscriber = FmtSubscriber::builder()
         .with_max_level(Level::INFO)
         .finish();
-    tracing::subscriber::set_global_default(subscriber)
-        .expect("setting default subscriber failed");
+    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_autostart::init(
@@ -154,7 +155,7 @@ fn main() {
         .setup(|app| {
             let app_handle = app.handle().clone();
             app.manage(TrayState(Mutex::new(false)));
-    app.manage(AudioState);
+            app.manage(AudioState);
             // Log successful startup
             info!("Rae app started successfully");
 

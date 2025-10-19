@@ -21,7 +21,10 @@ pub fn set_stealth_mode_enabled(app: AppHandle, enabled: bool) {
         apply_stealth_to_window(&chat_window, enabled);
     }
 
-    println!("Stealth mode {}", if enabled { "enabled" } else { "disabled" });
+    println!(
+        "Stealth mode {}",
+        if enabled { "enabled" } else { "disabled" }
+    );
 }
 
 #[tauri::command]
@@ -99,7 +102,7 @@ fn start_title_randomization(window: tauri::WebviewWindow) {
 
             // Change title every 30-60 seconds
             std::thread::sleep(std::time::Duration::from_millis(
-                30000 + fastrand::u64(0..30000)
+                30000 + fastrand::u64(0..30000),
             ));
         }
     });
