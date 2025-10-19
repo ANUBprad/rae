@@ -1,13 +1,5 @@
-/**
- * Utility functions for checking and managing app updates
- */
-
 import { useState, useEffect } from "react";
 
-/**
- * Check if an update is available
- * @returns Promise<boolean> - true if update is available, false otherwise
- */
 export const checkForUpdate = async (): Promise<boolean> => {
   try {
     // TODO: Implement actual update check logic
@@ -24,10 +16,6 @@ export const checkForUpdate = async (): Promise<boolean> => {
   }
 };
 
-/**
- * Custom hook to check for updates and manage update availability state
- * @returns {boolean} updateAvailable - Whether an update is available
- */
 export const useUpdateCheck = (): boolean => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
@@ -47,10 +35,6 @@ export const useUpdateCheck = (): boolean => {
   return updateAvailable;
 };
 
-/**
- * Handle update button click
- * This function should be called when user clicks the update button
- */
 export const handleUpdateClick = async (): Promise<void> => {
   try {
     // TODO: Implement actual update logic
