@@ -1,4 +1,3 @@
-
 import { LaunchOverlayWindow } from "@/routes/overlay/components/OverlayLauncher";
 import { useUserStore } from "@/store/userStore";
 import { useEffect, useState } from "react";
@@ -40,14 +39,10 @@ export default function Landing() {
     }
   };
 
-
-
   return (
     <>
       {showSplash && <SplashScreen onFadeOut={() => setShowSplash(false)} />}
-      <div
-        className="h-full flex w-full flex-col items-center justify-center overflow-hidden text-foreground "
-      >
+      <div className="h-full flex w-full flex-col items-center justify-center overflow-hidden text-foreground ">
         <div className="bg-background w-full flex flex-col items-center justify-center flex-grow p-8">
           <motion.div
             initial={{ opacity: 0, y: 5 }}
@@ -57,8 +52,6 @@ export default function Landing() {
           >
             Welcome back, {name?.split(" ")[0]}
           </motion.div>
-
-
 
           {/* Input area at bottom */}
           <motion.div
@@ -76,7 +69,7 @@ export default function Landing() {
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Ask Rae anything..."
+                  placeholder="Ask Rae anything... gang"
                   className="flex-1 bg-transparent outline-none text-sm px-3 py-3 placeholder:text-foreground/40"
                 />
                 <Button

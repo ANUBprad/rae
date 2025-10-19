@@ -58,7 +58,7 @@ const createAudioManager = () => {
   };
 
   return {
-    playNotchSound
+    playNotchSound,
   };
 };
 
@@ -87,7 +87,7 @@ const createNotchController = () => {
     isPinned: boolean,
     showChat: boolean,
     isNotch: boolean,
-    inputActive: boolean
+    inputActive: boolean,
   ) => {
     return (
       isPinned &&
@@ -102,7 +102,7 @@ const createNotchController = () => {
     isPinned: boolean,
     showChat: boolean,
     isNotch: boolean,
-    inputActive: boolean
+    inputActive: boolean,
   ) => {
     return {
       isPinned,
@@ -118,7 +118,7 @@ const createNotchController = () => {
     clearNotchTimeout,
     setNotchTimeout,
     shouldEnableNotch,
-    getNotchDebugInfo
+    getNotchDebugInfo,
   };
 };
 
@@ -167,7 +167,7 @@ const createScreenshotManager = () => {
   const captureScreenshot = async (
     windowHwnd: number | null,
     isActive: boolean,
-    setWindowScreenshot: (screenshot: string) => void
+    setWindowScreenshot: (screenshot: string) => void,
   ) => {
     // Only capture screenshot if the green toggle is active
     if (!isActive) {
@@ -189,7 +189,7 @@ const createScreenshotManager = () => {
     cancelHideTimeout,
     hideScreenshot,
     scheduleHideTimeout,
-    captureScreenshot
+    captureScreenshot,
   };
 };
 
@@ -218,7 +218,7 @@ const createTimerManager = () => {
   return {
     setTimeout,
     clearTimeout,
-    clearAllTimeouts
+    clearAllTimeouts,
   };
 };
 
@@ -226,7 +226,7 @@ const createTimerManager = () => {
 const createEventHandlerFactory = (
   notchController: any,
   audioManager: any,
-  inputActiveRef: any
+  inputActiveRef: any,
 ) => {
   const createMouseEnterHandler = (
     isPinned: boolean,
@@ -234,7 +234,7 @@ const createEventHandlerFactory = (
     isNotch: boolean,
     inputActive: boolean,
     bubbleSoundEnabled: boolean,
-    setIsNotch: (isNotch: boolean) => void
+    setIsNotch: (isNotch: boolean) => void,
   ) => {
     return () => {
       // Clear any pending notch timeout
@@ -246,9 +246,23 @@ const createEventHandlerFactory = (
         audioManager.playNotchSound(bubbleSoundEnabled);
       } else {
         // If we should enable notch, set a timeout
-        if (notchController.shouldEnableNotch(isPinned, showChat, isNotch, inputActive)) {
+        if (
+          notchController.shouldEnableNotch(
+            isPinned,
+            showChat,
+            isNotch,
+            inputActive,
+          )
+        ) {
           notchController.setNotchTimeout(() => {
-            if (notchController.shouldEnableNotch(isPinned, showChat, isNotch, inputActive)) {
+            if (
+              notchController.shouldEnableNotch(
+                isPinned,
+                showChat,
+                isNotch,
+                inputActive,
+              )
+            ) {
               setIsNotch(true);
               audioManager.playNotchSound(bubbleSoundEnabled);
             }
@@ -264,11 +278,18 @@ const createEventHandlerFactory = (
     isNotch: boolean,
     inputActive: boolean,
     bubbleSoundEnabled: boolean,
-    setIsNotch: (isNotch: boolean) => void
+    setIsNotch: (isNotch: boolean) => void,
   ) => {
     return () => {
       // Set notch timeout if conditions are met
-      if (notchController.shouldEnableNotch(isPinned, showChat, isNotch, inputActive)) {
+      if (
+        notchController.shouldEnableNotch(
+          isPinned,
+          showChat,
+          isNotch,
+          inputActive,
+        )
+      ) {
         notchController.setNotchTimeout(() => {
           // Double check conditions when timeout fires and notch not disabled
           if (
@@ -281,7 +302,10 @@ const createEventHandlerFactory = (
               .then(() => {
                 setIsNotch(true);
                 // Play sound with perfect timing - synced with smooth resize animation (200ms total, play at 100ms)
-                setTimeout(() => audioManager.playNotchSound(bubbleSoundEnabled), 60);
+                setTimeout(
+                  () => audioManager.playNotchSound(bubbleSoundEnabled),
+                  60,
+                );
               })
               .catch((error) => {
                 console.error("Failed to enable notch:", error);
@@ -294,7 +318,7 @@ const createEventHandlerFactory = (
 
   return {
     createMouseEnterHandler,
-    createMouseLeaveHandler
+    createMouseLeaveHandler,
   };
 };
 
@@ -341,7 +365,7 @@ const Overlay = () => {
   const eventHandlerFactory = createEventHandlerFactory(
     notchController,
     audioManager,
-    inputActiveRef
+    inputActiveRef,
   );
 
   // Respect preference to stop analyzing after send
@@ -402,7 +426,6 @@ const Overlay = () => {
     } else {
       // Capture screenshot immediately when toggle is turned on
       if (windowHwnd != null) {
-
         invoke("capture_window_screenshot_by_hwnd", {
           hwnd: windowHwnd,
         })
@@ -544,7 +567,10 @@ const Overlay = () => {
             .then(() => {
               setIsNotch(true);
               // Play sound with perfect timing - synced with smooth resize animation (200ms total, play at 100ms)
-              setTimeout(() => audioManager.playNotchSound(bubbleSoundEnabled), 60);
+              setTimeout(
+                () => audioManager.playNotchSound(bubbleSoundEnabled),
+                60,
+              );
             })
             .catch((error) => {
               console.error("Failed to enable notch:", error);
@@ -577,7 +603,10 @@ const Overlay = () => {
             .then(() => {
               console.log("Safety: Notch enabled via fallback");
               setIsNotch(true);
-              setTimeout(() => audioManager.playNotchSound(bubbleSoundEnabled), 60);
+              setTimeout(
+                () => audioManager.playNotchSound(bubbleSoundEnabled),
+                60,
+              );
             })
             .catch((error) => {
               console.error("Safety: Failed to enable notch:", error);
@@ -604,7 +633,7 @@ const Overlay = () => {
     isNotch,
     inputActive,
     bubbleSoundEnabled,
-    setIsNotch
+    setIsNotch,
   );
   useEffect(() => {
     const unlisten = listen("notch-hover", () => {
@@ -859,7 +888,7 @@ const Overlay = () => {
     isNotch,
     inputActive,
     bubbleSoundEnabled,
-    setIsNotch
+    setIsNotch,
   );
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -1053,10 +1082,13 @@ const Overlay = () => {
     screenshotManager.hideScreenshot(setShowScreenshot);
   }, [windowName, windowIcon, windowHwnd]);
 
-
   const handleScreenshotHover = async () => {
     setIsHoveringTrigger(true);
-    await screenshotManager.captureScreenshot(windowHwnd, isActive, setWindowScreenshot);
+    await screenshotManager.captureScreenshot(
+      windowHwnd,
+      isActive,
+      setWindowScreenshot,
+    );
   };
 
   const handleScreenshotLeave = () => {
@@ -1167,7 +1199,7 @@ const Overlay = () => {
                     placeholder={
                       attachedImage
                         ? "Describe what you want to know about this image..."
-                        : "Ask Rae anything or paste a screenshot..."
+                        : "Ask Rae anything yep or paste a screenshot..."
                     }
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
@@ -1230,7 +1262,7 @@ const Overlay = () => {
                     {listening ? (
                       <></>
                     ) : (
-                      <>{inputText || "Ask Rae anything..."}</>
+                      <>{inputText || "Ask Rae anything... ;)"}</>
                     )}
                   </span>
                 </div>
