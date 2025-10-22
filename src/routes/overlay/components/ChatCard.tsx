@@ -66,7 +66,7 @@ interface ChatViewProps {
   setAssistMessage?: (message: string) => void;
 }
 
-import Option from "./Option";
+import CustomDropdown, { DropdownOption } from "./CustomDropdown";
 
 export const ChatView = ({
   onClose,
@@ -878,12 +878,12 @@ export const ChatView = ({
                     <div
                       className={`max-w-[85%] ${
                         msg.sender === "user"
-                          ? "bg-zinc-800 dark:bg-zinc-900 text-white rounded-2xl rounded-br-md px-4 py-3"
+                          ? "bg-zinc-800 dark:bg-stone-900 text-white rounded-lg rounded-br-md px-3 py-2"
                           : "bg-transparent text-foreground"
                       }`}
                     >
                       {msg.sender === "ai" ? (
-                        <div className="prose prose-base max-w-none text-foreground dark:text-zinc-100 leading-relaxed">
+                        <div className="prose prose-base max-w-none text-foreground dark:text-zinc-100 leading-relaxed px-3 py-2">
                           <div className="space-y-3">
                             {(() => {
                               try {
@@ -917,7 +917,7 @@ export const ChatView = ({
                               .map((img: string, imgIdx: number) => (
                                 <div
                                   key={imgIdx}
-                                  className="relative inline-block"
+                                  className="relative "
                                   onMouseEnter={() =>
                                     msg.sender === "ai"
                                       ? setHoveredImageIndex(idx)
@@ -927,24 +927,26 @@ export const ChatView = ({
                                     setHoveredImageIndex(null)
                                   }
                                 >
-                                  <img
-                                    src={img}
-                                    alt={
-                                      msg.sender === "user"
-                                        ? "User uploaded"
-                                        : "AI generated"
-                                    }
-                                    className={`max-w-full rounded-lg border border-gray-300 transition-all duration-200 ${
-                                      msg.sender === "ai"
-                                        ? "cursor-pointer hover:scale-[1.02] hover:shadow-lg"
-                                        : ""
-                                    }`}
-                                  />
+                                  <div className="w-full h-fit overflow-hidden rounded-md border border-stone-600 mb-1">
+                                    <img
+                                      src={img}
+                                      alt={
+                                        msg.sender === "user"
+                                          ? "User uploaded"
+                                          : "AI generated"
+                                      }
+                                      className={`max-w-full rounded-lg  overflow-hidden transition-all duration-200 scale-105 ${
+                                        msg.sender === "ai"
+                                          ? "cursor-pointer hover:scale-[1.02] hover:shadow-lg"
+                                          : ""
+                                      }`}
+                                    />
+                                  </div>
 
                                   {/* Hover overlay only for AI images */}
                                   {msg.sender === "ai" &&
                                     hoveredImageIndex === idx && (
-                                      <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center transition-all duration-200 animate-in fade-in-0">
+                                      <div className="absolute  bg-opacity-50 rounded-lg flex items-center justify-center transition-all duration-200 animate-in fade-in-0">
                                         <button
                                           onClick={() =>
                                             handleReferenceImage(img)
@@ -1196,133 +1198,88 @@ export const ChatView = ({
                       className="w-5 h-5 dark:invert"
                     />
                   </OverlayButton>
-                  <AnimatePresence>
-                    {dropdownOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.98 }}
-                        transition={{ duration: 0.12, ease: "easeInOut" }}
-                        className="absolute z-40 left-1 bottom-full mb-1 overflow-hidden rounded-lg shadow-xl shadow-black/40 dark:bg-zinc-950 border border-border min-w-[160px]"
-                      >
-                        <div className="flex flex-col py-1">
-                          {MODELS.map((model) => (
-                            <button
-                              key={model.value}
-                              className={`h-9 text-left px-3 text-sm transition-colors whitespace-nowrap dark:text-zinc-300 hover:dark:text-white hover:dark:bg-zinc-900 ${
-                                model.value === currentModel.value
-                                  ? "font-semibold dark:bg-zinc-900"
-                                  : ""
-                              }`}
-                              onClick={() => {
-                                setCurrentModel(model);
-                                setDropdownOpen(false);
-                              }}
-                            >
-                              <div className="flex items-center gap-2">
-                                <img
-                                  src={openaiLogo}
-                                  alt="OpenAI"
-                                  className="w-5 h-5 dark:invert"
-                                />
-                                <span>{model.value}</span>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      </motion.div>
+                  <CustomDropdown
+                    isOpen={dropdownOpen}
+                    onClose={() => setDropdownOpen(false)}
+                    options={MODELS.map(
+                      (model): DropdownOption => ({
+                        label: model.value,
+                        value: model.value,
+                        active: model.value === currentModel.value,
+                        icon: (
+                          <img
+                            src={openaiLogo}
+                            alt="OpenAI"
+                            className="w-5 h-5 dark:invert"
+                          />
+                        ),
+                        onClick: () => setCurrentModel(model),
+                      }),
                     )}
-                  </AnimatePresence>
+                    variant="rich"
+                    position="bottom-left"
+                    minWidth="160px"
+                  />
                 </div>
                 <div className="h-full w-fit relative  flex items-center p-1 ">
-                  <AnimatePresence>
-                    {optionsOpen && (
-                      <>
-                        <motion.div
-                          initial={{ opacity: 0, scaleX: 0.9, scaleY: 0.95 }}
-                          animate={{
-                            opacity: 1,
-                            scaleX: 1,
-                            scaleY: 1,
-                            // y: optionsOpen ? 0 : 10,
-                          }}
-                          exit={{
-                            opacity: 0,
-                            scaleX: 0.9,
-                            scaleY: 0.95,
-                          }}
-                          style={{
-                            transformOrigin: "bottom left",
-                          }}
-                          transition={{
-                            duration: 0.2,
-                            ease: "circInOut",
-                          }}
-                          className="dark:bg-zinc-950 z-40 overflow-hidden rounded-lg shadow-xl shadow-black/40 absolute w-[200px]  bottom-full flex flex-col "
-                        >
-                          <div
-                            onClick={(e) => e.stopPropagation()}
-                            className="h-fit p-1 flex flex-col gap-1"
-                          >
-                            <Option
-                              active={selectedTool === 1}
-                              onClick={() =>
-                                setSelectedTool(selectedTool === 1 ? 0 : 1)
-                              }
-                              icon={<GlobeSimpleIcon className="text-lg" />}
-                            >
-                              {/* <GlobeSimpleIcon className="text-lg" /> */}
-                              Web Search
-                            </Option>
-                            <Option
-                              active={selectedTool === 2}
-                              onClick={() =>
-                                setSelectedTool(selectedTool === 2 ? 0 : 2)
-                              }
-                              icon={<BrainIcon className="text-lg" />}
-                            >
-                              {/* <BrainIcon className="text-lg" /> */}
-                              Super Memory
-                            </Option>
-                            <Option
-                              active={selectedTool === 4}
-                              onClick={() =>
-                                setSelectedTool(selectedTool === 4 ? 0 : 4)
-                              }
-                              icon={<Pencil className="text-lg" />}
-                            >
-                              Image Generation
-                            </Option>
-                            <Option
-                              active={stealthMode}
-                              onClick={async () => {
-                                const newStealthMode = !stealthMode;
-                                setStealthMode(newStealthMode);
-                                try {
-                                  await invoke("set_stealth_mode_enabled", {
-                                    enabled: newStealthMode,
-                                  });
-                                  emit("stealth_mode_changed", {
-                                    enabled: newStealthMode,
-                                  });
-                                } catch (error) {
-                                  console.error(
-                                    "Failed to toggle stealth mode:",
-                                    error,
-                                  );
-                                  // Revert state if backend call fails
-                                  setStealthMode(stealthMode);
-                                }
-                              }}
-                              icon={<EyeSlashIcon className="text-lg" />}
-                            >
-                              Stealth Mode
-                            </Option>
-                          </div>
-                        </motion.div>
-                      </>
-                    )}
-                  </AnimatePresence>
+                  <CustomDropdown
+                    isOpen={optionsOpen}
+                    onClose={() => setOptionsOpen(false)}
+                    options={[
+                      {
+                        label: "Web Search",
+                        value: "web-search",
+                        active: selectedTool === 1,
+                        icon: <GlobeSimpleIcon className="text-lg" />,
+                        onClick: () =>
+                          setSelectedTool(selectedTool === 1 ? 0 : 1),
+                      },
+                      {
+                        label: "Super Memory",
+                        value: "super-memory",
+                        active: selectedTool === 2,
+                        icon: <BrainIcon className="text-lg" />,
+                        onClick: () =>
+                          setSelectedTool(selectedTool === 2 ? 0 : 2),
+                      },
+                      {
+                        label: "Image Generation",
+                        value: "image-generation",
+                        active: selectedTool === 4,
+                        icon: <Pencil className="text-lg" />,
+                        onClick: () =>
+                          setSelectedTool(selectedTool === 4 ? 0 : 4),
+                      },
+                      {
+                        label: "Stealth Mode",
+                        value: "stealth-mode",
+                        active: stealthMode,
+                        icon: <EyeSlashIcon className="text-lg" />,
+                        onClick: async () => {
+                          const newStealthMode = !stealthMode;
+                          setStealthMode(newStealthMode);
+                          try {
+                            await invoke("set_stealth_mode_enabled", {
+                              enabled: newStealthMode,
+                            });
+                            emit("stealth_mode_changed", {
+                              enabled: newStealthMode,
+                            });
+                          } catch (error) {
+                            console.error(
+                              "Failed to toggle stealth mode:",
+                              error,
+                            );
+                            // Revert state if backend call fails
+                            setStealthMode(stealthMode);
+                          }
+                        },
+                      },
+                    ]}
+                    variant="rich"
+                    position="bottom-left"
+                    className="w-[200px]"
+                  />
                   <OverlayButton
                     onClick={(e) => {
                       e.stopPropagation();

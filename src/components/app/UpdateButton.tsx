@@ -1,6 +1,8 @@
 import { ArrowCircleUpIcon } from "@phosphor-icons/react";
 import { motion } from "motion/react";
 import { useUpdateCheck, handleUpdateClick } from "@/utils/updateUtils";
+import { emit, listen } from "@tauri-apps/api/event";
+import { useEffect, useState } from "react";
 
 interface UpdateButtonProps {
   expanded: boolean;
@@ -14,6 +16,64 @@ export const UpdateButton = ({
   active = false,
 }: UpdateButtonProps) => {
   const updateAvailable = useUpdateCheck();
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Emit update-needed event when update is available
+  useEffect(() => {
+    if (updateAvailable) {
+      console.log(
+        "[Main Window] Update available - emitting 'update-needed' to overlay",
+      );
+      emit("update-needed", { available: true });
+    } else {
+      console.log(
+        "[Main Window] No update available - emitting 'update-needed' to overlay",
+      );
+      emit("update-needed", { available: false });
+    }
+  }, [updateAvailable]);
+
+  // Listen for update-now event from overlay
+  useEffect(() => {
+    const setupListener = async () => {
+      const unlisten = await listen("update-now", async () => {
+        console.log(
+          "[Main Window] Received 'update-now' event from overlay - starting update process",
+        );
+        setIsUpdating(true);
+        try {
+          await handleUpdateClick();
+        } catch (error) {
+          console.error("[Main Window] Update failed:", error);
+        } finally {
+          setIsUpdating(false);
+        }
+      });
+
+      return unlisten;
+    };
+
+    let unlisten: (() => void) | undefined;
+    setupListener().then((unlistenFn) => {
+      unlisten = unlistenFn;
+    });
+
+    return () => {
+      if (unlisten) {
+        unlisten();
+      }
+    };
+  }, []);
+
+  const handleClick = () => {
+    onClick?.();
+    if (updateAvailable) {
+      console.log(
+        "[Main Window] Update button clicked - starting update process",
+      );
+      handleUpdateClick();
+    }
+  };
 
   return (
     <motion.button
@@ -26,17 +86,15 @@ export const UpdateButton = ({
         paddingInline: expanded ? "0px" : "0px",
         fontSize: expanded ? "14px" : "14px",
       }}
-      onClick={() => {
-        onClick?.();
-        handleUpdateClick();
-      }}
+      onClick={handleClick}
+      disabled={isUpdating}
       className={`w-full shrink-0 group h-[44px] flex items-center overflow-hidden rounded-lg cursor-pointer flex-nowrap whitespace-nowrap font-medium duration-100 relative ${
         updateAvailable && expanded
           ? "dark:bg-red-500/90 dark:text-white dark:hover:bg-red-600 animate-pulse"
           : `dark:bg-zinc-800/20 dark:hover:text-white dark:hover:bg-zinc-800 transition-colors dark:text-zinc-400 ${
               active && "dark:!bg-zinc-800 dark:!text-white"
             }`
-      }`}
+      } ${isUpdating ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       <motion.div
         animate={{
@@ -52,7 +110,7 @@ export const UpdateButton = ({
           }}
           transition={{ duration: 0.2, ease: "easeInOut", type: "tween" }}
         >
-          <ArrowCircleUpIcon className="" />
+          <ArrowCircleUpIcon className={isUpdating ? "animate-spin" : ""} />
         </motion.div>
         {updateAvailable && !expanded && (
           <motion.div
@@ -69,9 +127,11 @@ export const UpdateButton = ({
         animate={{ opacity: !expanded ? 0 : 1 }}
       >
         {expanded
-          ? updateAvailable
-            ? "Update available"
-            : "No updates available"
+          ? isUpdating
+            ? "Updating..."
+            : updateAvailable
+              ? "Update available"
+              : "No updates available"
           : "Updates"}
       </motion.div>
     </motion.button>

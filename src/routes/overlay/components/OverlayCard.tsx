@@ -11,7 +11,7 @@ import { animations } from "@/constants/animations";
 import { useUserStore } from "@/store/userStore";
 import { useNoteStore } from "@/store/noteStore";
 import { GetNotes } from "@/api/notes";
-import { useUpdateCheck, handleUpdateClick } from "@/utils/updateUtils";
+import { handleUpdateClick } from "@/utils/updateUtils";
 import {
   ArrowCircleUpIcon,
   ArrowElbowDownLeftIcon,
@@ -340,7 +340,33 @@ const Overlay = () => {
   const [isActive, setIsActive] = useState<boolean>(
     () => localStorage.getItem("overlay_active") !== "false", // Default to true if not set
   );
-  const updateAvailable = useUpdateCheck();
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  // Event-driven update communication
+  useEffect(() => {
+    const setupUpdateListener = async () => {
+      const unlisten = await listen("update-needed", (event: any) => {
+        const { available } = event.payload;
+        console.log(
+          "[Overlay Window] Received 'update-needed' event:",
+          available,
+        );
+        setUpdateAvailable(available);
+      });
+      return unlisten;
+    };
+
+    let unlisten: (() => void) | undefined;
+    setupUpdateListener().then((unlistenFn) => {
+      unlisten = unlistenFn;
+    });
+
+    return () => {
+      if (unlisten) {
+        unlisten();
+      }
+    };
+  }, []);
+
   // Handler to spawn overlay-extended window
 
   const [windowName, setWindowName] = useState("");
@@ -1282,7 +1308,7 @@ const Overlay = () => {
                   <img
                     src={windowIcon}
                     alt="App icon"
-                    className="w-5 h-5 rounded-sm"
+                    className="w-5 h-5 rounded-sm "
                   />
                 ) : (
                   <div className="w-5 h-5 bg-gray-300 rounded-sm flex items-center justify-center">
@@ -1291,22 +1317,29 @@ const Overlay = () => {
                 )}
 
                 {/* Screenshot tooltip */}
-                {showScreenshot && windowScreenshot && (
-                  <div
-                    className="absolute top-full left-0 mt-2 z-[1000001] bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-1 animate-in fade-in-0 zoom-in-95 duration-200"
-                    onMouseEnter={handleTooltipHover}
-                    onMouseLeave={handleTooltipLeave}
-                  >
-                    <img
-                      src={windowScreenshot}
-                      alt="Window screenshot"
-                      className="min-w-[250px] max-h-[350px] rounded shadow-md"
-                      onLoad={() => {}}
-                      onError={(e) => console.error("Image failed to load:", e)}
-                      style={{ imageRendering: "crisp-edges" }}
-                    />
-                  </div>
-                )}
+                <AnimatePresence>
+                  {showScreenshot && windowScreenshot && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="absolute top-full pointer-events-none left-0 mt-2 z-[1000001] bg-gray-100 dark:bg-zinc-950 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-1 animate-in fade-in-0 zoom-in-95 duration-200"
+                      onMouseEnter={handleTooltipHover}
+                      onMouseLeave={handleTooltipLeave}
+                    >
+                      <img
+                        src={windowScreenshot}
+                        alt="Window screenshot"
+                        className="min-w-[250px] pointer-events-none max-h-[350px] rounded shadow-md"
+                        onLoad={() => {}}
+                        onError={(e) =>
+                          console.error("Image failed to load:", e)
+                        }
+                        style={{ imageRendering: "crisp-edges" }}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ) : (
               <div className="size-full drag"></div>
@@ -1357,7 +1390,10 @@ const Overlay = () => {
                 {updateAvailable && (
                   <OverlayButton
                     onClick={() => {
-                      handleUpdateClick();
+                      console.log(
+                        "[Overlay Window] Update button clicked - emitting 'update-now' to main window",
+                      );
+                      emit("update-now", {});
                     }}
                     title="Update available"
                     draggable={!isPinned}
