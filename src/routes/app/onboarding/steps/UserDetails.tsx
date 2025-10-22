@@ -43,7 +43,7 @@ const Name: React.FC<NameProps> = ({ onNext }) => {
   return (
     <div className="drag min-h-screen flex rounded-md items-center justify-center ">
       <div className="text-center p-8 w-full max-w-sm">
-        <h1 className="text-2xl !font-instrument-sans tracking-tighter mb-6">
+        <h1 className="text-2xl !font-primary tracking-tighter mb-6">
           What should we call you?
         </h1>
 

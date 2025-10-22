@@ -17,7 +17,7 @@ const Welcome: React.FC<WelcomeProps> = ({ onNext }) => {
     if (loggedIn) {
       navigate("/app/chat");
     }
-  }, [loggedIn])
+  }, [loggedIn]);
   useEffect(() => {
     // Close any stray magic dot once on load; avoid repeated closing to allow user toggles
     invoke("close_magic_dot").catch(console.error);
@@ -32,16 +32,10 @@ const Welcome: React.FC<WelcomeProps> = ({ onNext }) => {
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "circInOut", type: "tween" }}
-          className="text-6xl !font-instrument-sans !tracking-tighter  mb-2 flex gap-2 justify-center items-center"
+          className="text-6xl !font-primary !tracking-tighter  mb-2 flex gap-2 justify-center items-center"
         >
-          <motion.div
-            
-            
-            className="aspect-square rounded-full shrink-0 size-[52px] border-8 border-surface h-full"
-          ></motion.div>
-          <motion.div>
-            Rae
-          </motion.div>
+          <motion.div className="aspect-square rounded-full shrink-0 size-[52px] border-8 border-surface h-full"></motion.div>
+          <motion.div>Rae</motion.div>
         </motion.div>
         <motion.p
           initial={{ opacity: 0, y: 5 }}
@@ -56,22 +50,24 @@ const Welcome: React.FC<WelcomeProps> = ({ onNext }) => {
         >
           Your personal assistant
         </motion.p>
-        
-          <motion.div
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.5,
-              ease: "circInOut",
-              type: "tween",
-              delay: 0.2,
-            }}
+
+        <motion.div
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: 0.5,
+            ease: "circInOut",
+            type: "tween",
+            delay: 0.2,
+          }}
+        >
+          <Button
+            className="hover:dark:bg-surface/70 dark:bg-surface "
+            onClick={() => handleNext()}
           >
-            <Button className="hover:dark:bg-surface/70 dark:bg-surface " onClick={() => handleNext()}>
-              Get started
-            </Button>
-          </motion.div>
-        
+            Get started
+          </Button>
+        </motion.div>
       </div>
     </div>
   );

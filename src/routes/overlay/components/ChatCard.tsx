@@ -807,7 +807,7 @@ export const ChatView = ({
                             className="w-4 h-4 rounded-sm flex-shrink-0"
                           />
                         ) : (
-                          <div className="w-4 h-4 bg-gray-300 rounded-sm flex-shrink-0 flex items-center justify-center text-xs">
+                          <div className="w-4 h-4 bg-stone-300 rounded-sm flex-shrink-0 flex items-center justify-center text-xs">
                             ?
                           </div>
                         )}
@@ -956,7 +956,7 @@ export const ChatView = ({
                                           className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105 text-sm font-medium shadow-lg transform ${
                                             selectedTool === 4
                                               ? "bg-blue-500 text-white hover:bg-blue-600 hover:shadow-xl"
-                                              : "bg-white text-black hover:bg-gray-100 hover:shadow-xl"
+                                              : "bg-white text-black hover:bg-stone-100 hover:shadow-xl"
                                           }`}
                                           title={
                                             selectedTool === 4

@@ -197,7 +197,7 @@ const Sidebar = () => {
                   }}
                 >
                   {typeof convo.title == "string"
-                    ? convo.title.replace(`"`, "")
+                    ? convo.title
                     : "Invalid title"}
                 </div>
               ))}

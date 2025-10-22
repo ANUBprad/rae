@@ -1,112 +1,113 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
 @import "tailwindcss";
 
 @font-face {
-  font-family: "DM Mono";
-  src: url("./assets/fonts/dm-mono-light.ttf") format("truetype");
+    font-family: "DM Mono";
+    src: url("./assets/fonts/dm-mono-light.ttf") format("truetype");
 }
 
 @font-face {
-  font-family: "Instrument Sans";
-  src: url("./assets/fonts/instrument-sans.ttf") format("truetype");
+    font-family: "Instrument Sans";
+    src: url("./assets/fonts/instrument-sans.ttf") format("truetype");
 }
 @font-face {
-  font-family: "Instrument Sans";
-  src: url("./assets/fonts/instrument-sans-italic.ttf") format("truetype");
-  font-style: italic;
-}
-
-@font-face {
-  font-family: "Instrument Serif";
-  src: url("./assets/fonts/instrument-serif.ttf") format("truetype");
+    font-family: "Instrument Sans";
+    src: url("./assets/fonts/instrument-sans-italic.ttf") format("truetype");
+    font-style: italic;
 }
 
 @font-face {
-  font-family: "Instrument Serif";
-  src: url("./assets/fonts/instrument-serif-italic.ttf") format("truetype");
-  font-style: italic;
+    font-family: "Instrument Serif";
+    src: url("./assets/fonts/instrument-serif.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Instrument Serif";
+    src: url("./assets/fonts/instrument-serif-italic.ttf") format("truetype");
+    font-style: italic;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
 #root {
-  height: 100%;
+    height: 100%;
 }
 
 @theme {
-  --font-instrument-serif: "Instrument Serif", serif;
-  --font-instrument-sans: "Instrument Sans", Inter, Arial, sans-serif;
-  --font-dm-mono: "DM Mono", monospace;
-  --color-card: #151515;
-      --color-foreground: #ffffff;
-      --color-border: #222222;
-      --color-background: rgba(0,0,0, 0.9);
-      --color-surface: #ff2b44;
+    --font-instrument-serif: "Instrument Serif", serif;
+    --font-primary: "Instrument Sans", Inter, Arial, sans-serif;
+    --font-dm-mono: "DM Mono", monospace;
+    --color-card: #151515;
+    --color-foreground: #ffffff;
+    --color-border: #222222;
+    --color-background: rgba(0, 0, 0, 0.9);
+    --color-surface: #ff2b44;
 }
 
 ::-webkit-scrollbar {
-  width: 4px;
+    width: 4px;
 }
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: var(--color-background); 
+    background: var(--color-background);
 }
- 
+
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  margin-inline: 120px; 
-  border-radius: 50px;
+    background: var(--color-border);
+    margin-inline: 120px;
+    border-radius: 50px;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-surface); 
+    background: var(--color-surface);
 }
 
 @layer theme {
-  :root,
-  :host {
-    @variant dark {
-      --color-card: #151515;
-      --color-foreground: #ffffff;
-      --color-border: #222222;
-      --color-background: #010101;
-      --color-surface: #ff2b44;
+    :root,
+    :host {
+        @variant dark {
+            --color-card: #151515;
+            --color-foreground: #ffffff;
+            --color-border: #222222;
+            --color-background: #010101;
+            --color-surface: #ff2b44;
+        }
     }
-  }
 }
 
 :root {
-  font-family: "Instrument Sans", Inter, Arial, sans-serif;
+    font-family: "Instrument Sans", Arial, sans-serif;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
 }
 .drag {
-  -webkit-app-region: drag;
+    -webkit-app-region: drag;
 }
 .no-drag {
-  -webkit-app-region: no-drag;
+    -webkit-app-region: no-drag;
 }
 
 /* Prevent scrollbars inside small Tauri tool windows */
 html,
 body {
-  overflow: hidden !important;
-  margin: 0;
-  height: 100vh;
-  width: 100vw;
-  box-sizing: border-box;
+    overflow: hidden !important;
+    margin: 0;
+    height: 100vh;
+    width: 100vw;
+    box-sizing: border-box;
 }
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;
+    display: none;
 }
 
 h1 {
-  font-family: "Instrument Serif", serif;
+    font-family: "Instrument Serif", serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -114,7 +115,7 @@ h1 {
 
 /* Allow text selection by default */
 * {
-  user-select: text;
+    user-select: text;
 }
 
 /* Disable text selection for interactive elements */
@@ -127,5 +128,5 @@ option,
 .no-drag,
 [role="button"],
 [data-radix-collection-item] {
-  user-select: none;
+    user-select: none;
 }

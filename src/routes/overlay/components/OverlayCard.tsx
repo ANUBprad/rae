@@ -1221,7 +1221,7 @@ const Overlay = () => {
                   <input
                     autoFocus
                     type="text"
-                    className="no-drag text-foreground/60 text-sm font-medium border-none placeholder:font-medium outline-none bg-transparent w-full placeholder:dark:text-stone-500 focus:dark:placeholder:text-stone-400/0 placeholder:transition-colors pr-12"
+                    className="no-drag text-stone-400 text-sm font-medium border-none placeholder:font-medium outline-none bg-transparent w-full placeholder:dark:text-stone-500 focus:dark:placeholder:text-stone-400/0 placeholder:transition-colors pr-12"
                     placeholder={
                       attachedImage
                         ? "Describe what you want to know about this image..."
@@ -1282,7 +1282,7 @@ const Overlay = () => {
                 >
                   <span
                     className={`text-sm font-medium cursor-text z-50 ${
-                      inputText ? "text-foreground" : "text-gray-500"
+                      inputText ? "text-foreground" : "text-stone-400"
                     }`}
                   >
                     {listening ? (
@@ -1297,7 +1297,7 @@ const Overlay = () => {
               <div
                 className={`flex ${
                   !isPinned ? "drag" : ""
-                } items-center gap-2 px-4 h-full py-2 text-sm border-l border-border text-gray-600 relative`}
+                } items-center gap-2 px-4 h-full py-2 text-sm border-l border-border text-stone-600 relative`}
                 onMouseEnter={handleScreenshotHover}
                 onMouseLeave={handleScreenshotLeave}
               >
@@ -1311,7 +1311,7 @@ const Overlay = () => {
                     className="w-5 h-5 rounded-sm "
                   />
                 ) : (
-                  <div className="w-5 h-5 bg-gray-300 rounded-sm flex items-center justify-center">
+                  <div className="w-5 h-5 bg-stone-300 rounded-sm flex items-center justify-center">
                     ?
                   </div>
                 )}
@@ -1323,7 +1323,7 @@ const Overlay = () => {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="absolute top-full pointer-events-none left-0 mt-2 z-[1000001] bg-gray-100 dark:bg-stone-950 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-1 animate-in fade-in-0 zoom-in-95 duration-200"
+                      className="absolute top-full pointer-events-none left-0 mt-2 z-[1000001] bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-700 rounded-lg shadow-xl p-1 animate-in fade-in-0 zoom-in-95 duration-200"
                       onMouseEnter={handleTooltipHover}
                       onMouseLeave={handleTooltipLeave}
                     >

@@ -63,7 +63,7 @@ const MagicDot = () => {
         // Collapsed notch UI: mac-style notch (flat top, rounded bottom corners)
         <div className="w-full h-full flex items-start justify-center">
           <div
-            className={`cursor-pointer select-none border border-gray-300 border-t-0 shadow-[0_2px_8px_rgba(0,0,0,0.12)] overflow-hidden bg-white`}
+            className={`cursor-pointer select-none border border-stone-300 border-t-0 shadow-[0_2px_8px_rgba(0,0,0,0.12)] overflow-hidden bg-white`}
             style={{
               width: NOTCH.w,
               height: NOTCH.h,

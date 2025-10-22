@@ -26,7 +26,9 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
   };
 
   return (
-    <div className={`no-drag flex items-center gap-1 h-full ${className ?? ""}`}>
+    <div
+      className={`no-drag flex items-center gap-1 h-full ${className ?? ""}`}
+    >
       <button
         type="button"
         onClick={handleMinimize}
@@ -39,7 +41,7 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
         type="button"
         onClick={onToggleShrink}
         title={shrunk ? "Expand" : "Shrink"}
-        className="p-1 rounded-md hover:bg-gray-700 text-white"
+        className="p-1 rounded-md hover:bg-stone-700 text-white"
       >
         {shrunk ? <Maximize2 size={18} /> : <Minimize2 size={18} />}
       </button> */}
@@ -48,7 +50,9 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
         onClick={async () => {
           try {
             // Create tray + hide and remove taskbar presence (stealth-like)
-            try { await invoke("hide_main_to_tray"); } catch (_) {}
+            try {
+              await invoke("hide_main_to_tray");
+            } catch (_) {}
           } catch (error) {
             // eslint-disable-next-line no-console
             console.error("Failed to hide window", error);
@@ -64,5 +68,3 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
 };
 
 export default WindowControls;
-
-

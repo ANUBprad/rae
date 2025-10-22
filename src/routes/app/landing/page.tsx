@@ -48,7 +48,7 @@ export default function Landing() {
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: "circInOut" }}
-            className="text-3xl mb-8 font-instrument-sans tracking-tighter font-semibold"
+            className="text-3xl mb-8 font-primary tracking-tighter font-semibold"
           >
             Welcome back, {name?.split(" ")[0]}
           </motion.div>

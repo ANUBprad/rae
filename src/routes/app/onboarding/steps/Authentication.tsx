@@ -63,7 +63,7 @@ const Auth: React.FC<{ onNext: (step: string) => void }> = ({ onNext }) => {
   return (
     <div className="drag rounded-md min-h-screen flex items-center justify-center ">
       <div className="w-full max-w-sm  p-8 rounded-xl flex flex-col gap-2">
-        <h1 className="text-center mb-2 text-4xl !font-instrument-sans tracking-tighter  ">
+        <h1 className="text-center mb-2 text-4xl !font-primary tracking-tighter  ">
           {isLogin ? "Login" : "Create an account"}
         </h1>
 
@@ -116,7 +116,7 @@ const Auth: React.FC<{ onNext: (step: string) => void }> = ({ onNext }) => {
             setIsLogin(!isLogin);
           }}
           className="w-full  "
-          // className="no-drag w-full py-3 rounded-full bg-gray-200 text-black font-medium cursor-pointer hover:scale-105 transition-all duration-300"
+          // className="no-drag w-full py-3 rounded-full bg-stone-200 text-black font-medium cursor-pointer hover:scale-105 transition-all duration-300"
         >
           {isLogin ? "Don't have an account?" : "Already have an account?"}
         </Button>

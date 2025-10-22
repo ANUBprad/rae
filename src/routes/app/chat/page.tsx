@@ -607,7 +607,7 @@ export default function ChatWindow() {
                                   ? "User uploaded"
                                   : "AI generated"
                               }
-                              className={`max-w-full rounded-lg border border-gray-300 transition-all duration-200 ${
+                              className={`max-w-full rounded-lg border border-stone-300 transition-all duration-200 ${
                                 msg.sender === "ai"
                                   ? "cursor-pointer hover:scale-[1.02] hover:shadow-lg"
                                   : ""
@@ -623,7 +623,7 @@ export default function ChatWindow() {
                                     className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105 text-sm font-medium shadow-lg transform ${
                                       selectedTool === 4
                                         ? "bg-blue-500 text-white hover:bg-blue-600 hover:shadow-xl"
-                                        : "bg-white text-black hover:bg-gray-100 hover:shadow-xl"
+                                        : "bg-white text-black hover:bg-stone-100 hover:shadow-xl"
                                     }`}
                                     title={
                                       selectedTool === 4

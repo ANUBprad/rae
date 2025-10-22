@@ -29,7 +29,7 @@ const ConnectX: React.FC<ConnectXProps> = ({ provider, email }) => {
   };
 
   const providerColors: Record<string, string> = {
-    notion: "bg-gray-800 hover:bg-gray-700",
+    notion: "bg-stone-800 hover:bg-stone-700",
     "google-drive": "bg-green-600 hover:bg-green-500",
     "one-drive": "bg-blue-600 hover:bg-blue-500",
   };
