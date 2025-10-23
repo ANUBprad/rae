@@ -55,9 +55,11 @@ export const SidebarButton = ({
         // paddingBlock: expanded ? "20px" : "0px",
       }}
       onClick={onClick}
-      className={`w-full shrink-0 group h-[44px]  flex items-center overflow-hidden rounded-sm dark:bg-stone-800/20 cursor-pointer dark:hover:text-white ${
-        active && "dark:!bg-stone-800 dark:!text-white"
-      } dark:hover:bg-stone-900 transition-colors flex-nowrap whitespace-nowrap dark:text-stone-400 font-medium duration-100`}
+      className={`w-full shrink-0 group h-[44px]  flex items-center overflow-hidden rounded-sm  cursor-pointer dark:hover:text-white ${
+        active
+          ? "bg-gradient-to-b from-stone-800 to-stone-900 shadow-[inset_0_1px_1px_rgba(255,255,255,.2)] dark:!text-white"
+          : "hover:from-stone-800 hover:to-stone-900 bg-gradient-to-b  from-transparent to-transparent"
+      }   transition-colors flex-nowrap whitespace-nowrap dark:text-stone-400 font-medium duration-100`}
     >
       <motion.div
         animate={{
@@ -139,7 +141,7 @@ const Sidebar = () => {
         </motion.div>
         <button
           onClick={() => setExpanded((prev) => !prev)}
-          className="h-full shrink-0 aspect-square flex items-center justify-center dark:hover:bg-stone-800 dark:text-stone-400 hover:dark:text-white transition-colors duration-100 rounded-lg dark:bg-stone-900/50"
+          className="h-full shrink-0 aspect-square flex items-center justify-center hover:from-stone-800 hover:to-stone-900 bg-gradient-to-b  from-transparent to-transparent hover:dark:text-white transition-colors duration-100 rounded-sm "
         >
           <AnimatePresence>
             <motion.div
