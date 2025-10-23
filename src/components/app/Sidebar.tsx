@@ -55,7 +55,7 @@ export const SidebarButton = ({
         // paddingBlock: expanded ? "20px" : "0px",
       }}
       onClick={onClick}
-      className={`w-full shrink-0 group h-[44px]  flex items-center overflow-hidden rounded-sm  cursor-pointer dark:hover:text-white ${
+      className={`w-full shrink-0 group h-[44px]  flex items-center overflow-hidden outline-none rounded-sm  cursor-pointer dark:hover:text-white ${
         active
           ? "bg-gradient-to-b from-stone-800 to-stone-900 shadow-[inset_0_1px_1px_rgba(255,255,255,.2)] dark:!text-white"
           : "hover:from-stone-900 hover:to-stone-900/80 bg-gradient-to-b  from-transparent to-transparent"
