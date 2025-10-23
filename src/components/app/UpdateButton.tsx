@@ -88,7 +88,7 @@ export const UpdateButton = ({
       }}
       onClick={handleClick}
       disabled={isUpdating}
-      className={`w-full shrink-0 group h-[44px] flex items-center overflow-hidden rounded-lg cursor-pointer flex-nowrap whitespace-nowrap font-medium duration-100 relative ${
+      className={`w-full shrink-0 group h-[44px] flex items-center overflow-hidden rounded-sm cursor-pointer flex-nowrap whitespace-nowrap font-medium duration-100 relative ${
         updateAvailable && expanded
           ? "dark:bg-red-500/90 dark:text-white dark:hover:bg-red-600 animate-pulse"
           : `dark:bg-stone-800/20 dark:hover:text-white dark:hover:bg-stone-800 transition-colors dark:text-stone-400 ${
@@ -105,7 +105,7 @@ export const UpdateButton = ({
         <motion.div
           variants={{
             hover: {
-              y: -2,
+              // y: -2,
             },
           }}
           transition={{ duration: 0.2, ease: "easeInOut", type: "tween" }}

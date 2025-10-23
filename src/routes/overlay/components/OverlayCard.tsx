@@ -1133,7 +1133,7 @@ const Overlay = () => {
     <div
       className={`w-full h-screen  flex z-[1000000]${
         isNotch ? "items-start " : "items-center"
-      } justify-center ${isNotch ? "pt-2" : "p-2"} box-border`}
+      } justify-center ${isNotch ? "pt-2" : "p-2"} `}
     >
       <motion.main
         animate={
@@ -1147,7 +1147,7 @@ const Overlay = () => {
               ? {
                   scale: 1,
                   y: 0,
-                  borderRadius: "12px",
+                  borderRadius: "8px",
                   width: EXPANDED_WIDTH,
                   height: "100%",
                   x: 0,
@@ -1157,7 +1157,7 @@ const Overlay = () => {
               : {
                   scale: 1,
                   y: 0,
-                  borderRadius: "12px",
+                  borderRadius: "8px",
                   width: DEFAULT_CHAT[0],
                   height: "100%",
                 }
@@ -1191,7 +1191,7 @@ const Overlay = () => {
           className={`flex items-center z-[100000] dark:bg-[#010101] bg-white   h-[44px] shrink-0 ${
             !isPinned ? "drag" : ""
           } ${isNotch ? "pointer-events-none" : ""}`}
-          style={{ borderRadius: "12px" }}
+          style={{ borderRadius: "8px" }}
         >
           <div className="p-1 w-fit h-full">
             <OverlayButton

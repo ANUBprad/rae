@@ -721,7 +721,7 @@ export const ChatView = ({
       exit={{ opacity: 0, y: "-100%" }}
       transition={{ duration: animations.overlayChat, ease: "circInOut" }}
       ref={chatContainerRef}
-      className={`no-drag flex flex-col h-screen w-full overflow-hidden relative z-[1000] rounded-xl shadow-lg mt-2 ${
+      className={`no-drag flex flex-col h-screen w-full overflow-hidden relative z-[1000] rounded-lg shadow-lg mt-2 ${
         isMaximized ? "min-h-[95vh]" : "min-h-[400px]"
       }`}
     >

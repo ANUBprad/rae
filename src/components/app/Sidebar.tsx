@@ -55,9 +55,9 @@ export const SidebarButton = ({
         // paddingBlock: expanded ? "20px" : "0px",
       }}
       onClick={onClick}
-      className={`w-full shrink-0 group h-[44px]  flex items-center overflow-hidden rounded-lg dark:bg-stone-800/20 cursor-pointer dark:hover:text-white ${
+      className={`w-full shrink-0 group h-[44px]  flex items-center overflow-hidden rounded-sm dark:bg-stone-800/20 cursor-pointer dark:hover:text-white ${
         active && "dark:!bg-stone-800 dark:!text-white"
-      } dark:hover:bg-stone-800 transition-colors flex-nowrap whitespace-nowrap dark:text-stone-400 font-medium duration-100`}
+      } dark:hover:bg-stone-900 transition-colors flex-nowrap whitespace-nowrap dark:text-stone-400 font-medium duration-100`}
     >
       <motion.div
         animate={{
@@ -190,7 +190,7 @@ const Sidebar = () => {
                 .map((convo) => (
                   <div
                     key={convo.id}
-                    className={`dark:bg-stone-900/0 ${currentConvoId == convo.id ? "dark:!bg-stone-800 dark:!text-stone-200" : ""} h-[32px] items-center shrink-0 whitespace-nowrap px-4 rounded-lg overflow-hidden dark:text-stone-400 hover:dark:bg-stone-800 transition-colors duration-100 cursor-pointer text-sm font-medium py-2 w-full`}
+                    className={`dark:bg-stone-900/0 ${currentConvoId == convo.id ? "dark:!bg-stone-800 dark:!text-stone-200" : ""} h-[32px] items-center shrink-0 whitespace-nowrap px-4 rounded-sm overflow-hidden dark:text-stone-400 hover:dark:bg-stone-800 transition-colors duration-100 cursor-pointer text-sm font-medium py-2 w-full`}
                     onClick={() => {
                       console.log("Selected chat:", convo.title);
                       console.log("Chat messages:", convo);

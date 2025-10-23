@@ -661,7 +661,7 @@ export default function ChatWindow() {
                           .map((img: string, imgIdx: number) => (
                             <div
                               key={imgIdx}
-                              className="relative w-full h-fit  border border-stone-300 rounded-md overflow-hidden mb-1"
+                              className="relative w-full h-fit   rounded-md overflow-hidden mb-1"
                             >
                               <img
                                 src={img}
